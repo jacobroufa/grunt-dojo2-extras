@@ -16,8 +16,9 @@ export = function (grunt: IGrunt) {
 
 	grunt.initConfig(config);
 
-	grunt.registerTask('build', [ 'shell:build-ts' ]);
+	grunt.registerTask('build', [ 'shell:build-ts', 'copy:staticDistFiles' ]);
 	grunt.registerTask('dev', [ 'clean', 'tslint', 'build' ]);
 	grunt.registerTask('test', [ 'dev', 'intern' ]);
 	grunt.registerTask('init', [ 'prompt:github', 'initAutomation' ]);
+	grunt.registerTask('cd-latest', [ 'prebuild', 'sync:latest', 'clean:latest', 'copy:latest', 'publish:latest' ]);
 };

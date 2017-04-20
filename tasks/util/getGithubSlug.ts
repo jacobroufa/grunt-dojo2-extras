@@ -1,6 +1,6 @@
 import { repositorySource } from '../../src/util/environment';
 
-interface Options {
+export interface Options {
 	repo?: string;
 }
 

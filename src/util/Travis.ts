@@ -56,7 +56,7 @@ export default class Travis {
 	}
 }
 
-interface RepositoryData {
+export interface RepositoryData {
 	active: boolean;
 	id: number;
 	slug: string;
@@ -74,7 +74,7 @@ export interface ListEnvironmentVariablesResponse {
 	env_vars: EnviornmentVariable[];
 }
 
-class Repository {
+export class Repository {
 	active: boolean;
 
 	id: number;

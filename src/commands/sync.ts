@@ -15,8 +15,10 @@ export default async function sync(options: Options) {
 
 	logger.info(`Syncing ${ url } to ${ cloneDirectory }`);
 	await git.ensureConfig(options.username, options.useremail);
-	// TODO if branch doesn't exist create an orphan
 	await git.clone(url);
-	await git.checkout(branch);
-	await git.pull();
+	await git.checkout(branch)
+		.then(
+			() => git.pull(),
+			() => git.createOrphan(branch)
+		);
 }

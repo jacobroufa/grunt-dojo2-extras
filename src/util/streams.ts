@@ -1,7 +1,7 @@
 import { Readable } from 'stream';
 import EventEmitter = NodeJS.EventEmitter;
 
-interface Stream extends EventEmitter {
+export interface Stream extends EventEmitter {
 	readable: Readable['readable'];
 }
 

@@ -9,10 +9,9 @@ before_install:
   - npm install grunt-cli typings -g
 script:
   - grunt test
-  - grunt ci
 deploy:
   provider: script
-  script: "grunt publish"
+  script: "grunt cd-latest"
   skip_cleanup: true
   on:
     branch: master

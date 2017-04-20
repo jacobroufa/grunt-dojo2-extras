@@ -1,7 +1,26 @@
+export const latestDirectory = '_latest';
+
 export const distDirectory = '_build';
 
 export const clean = {
-	build: [ '<%= distDirectory %>' ]
+	build: [ '<%= distDirectory %>' ],
+	dists: [ '<%= latestDirectory %>' ],
+	latest: [ '<%= latestDirectory %>/**/*', '!.git/**' ]
+};
+
+export const copy = {
+	latest: {
+		expand: true,
+		cwd: '<%= distDirectory %>',
+		src: '**',
+		dest: '<%= latestDirectory %>'
+	},
+	staticDistFiles: {
+		expand: true,
+		cwd: '.',
+		src: [ 'README.md', 'LICENSE', 'package.json' ],
+		dest: '<%= distDirectory %>'
+	}
 };
 
 export const intern = {
@@ -35,6 +54,15 @@ export const prompt = {
 	}
 };
 
+export const publish = {
+	'latest': {
+		options: {
+			branch: 'latest',
+			cloneDirectory: '<%= latestDirectory %>'
+		}
+	}
+};
+
 export const shell = {
 	'build-ts': {
 		command: 'tsc',
@@ -42,6 +70,15 @@ export const shell = {
 			execOptions: {
 				cwd: 'support'
 			}
+		}
+	}
+};
+
+export const sync = {
+	latest: {
+		options: {
+			branch: 'latest',
+			cloneDirectory: '<%= latestDirectory %>'
 		}
 	}
 };

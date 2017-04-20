@@ -1,7 +1,7 @@
-import { Logger, transports } from 'winston';
+import { Logger, transports, LoggerInstance } from 'winston';
 import { Writable, WritableOptions } from 'stream';
 
-export const logger = new Logger({
+export const logger: LoggerInstance = new Logger({
 	level: 'debug',
 	transports: [
 		new transports.Console({
