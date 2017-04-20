@@ -45,6 +45,7 @@
     "@dojo/has": "^2.0.0-beta1.1",
     "@dojo/interfaces": "^2.0.0-beta1.1",
     "@dojo/shim": "^2.0.0-beta1.1",
+    "@types/grunt": "^0.4.21",
     "@types/mkdirp": "^0.3.29",
     "@types/semver": "^5.3.31",
     "@types/winston": "^2.3.1",
