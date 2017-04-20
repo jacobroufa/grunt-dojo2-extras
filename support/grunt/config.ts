@@ -1,6 +1,10 @@
+import { repositorySource } from '../../src/util/environment';
+
 export const latestDirectory = '_latest';
 
 export const distDirectory = '_build';
+
+export const [ repoOwner, repoName ] = repositorySource().split('/');
 
 export const clean = {
 	build: [ '<%= distDirectory %>' ],
@@ -20,6 +24,15 @@ export const copy = {
 		cwd: '.',
 		src: [ 'README.md', 'LICENSE', 'package.json' ],
 		dest: '<%= distDirectory %>'
+	}
+};
+
+export const initAutomation = {
+	repo: {
+		options: {
+			repoOwner: '<%= repoOwner %>',
+			repoName: '<%= repoName %>'
+		}
 	}
 };
 

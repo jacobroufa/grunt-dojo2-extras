@@ -2,6 +2,9 @@ import request from '@dojo/core/request';
 import { hasGitCredentials } from './environment';
 import { readFileSync } from 'fs';
 import { Response } from '@dojo/core/request';
+import { RequestOptions } from '@dojo/core/request/interfaces';
+import { toString } from '../util/streams';
+import { NodeResponse } from '@dojo/core/request/providers/node';
 
 export interface Release {
 	name: string;
@@ -23,11 +26,14 @@ export interface AuthResponse {
 	token: string;
 }
 
-function responseHandler(response: Response): Response {
+function responseHandler(response: NodeResponse): Response | Promise<Response> {
 	const statusCode = response.status;
 	if (statusCode < 200 || statusCode >= 300) {
 		const message = response.statusText;
-		throw new Error(`Github responded with ${ statusCode }. ${ message }`);
+		return toString(response.nativeResponse)
+			.then(function (body) {
+				throw new Error(`Github responded with ${ statusCode }. ${ message }. ${ body }`);
+			});
 	}
 	return response;
 }
@@ -63,14 +69,15 @@ export default class GitHub {
 	]): Promise<AuthResponse> {
 		this.assertAuthentication();
 		const endpoint = `https://api.github.com/authorizations`;
-		return request.post(endpoint, {
+		const options: RequestOptions = {
 			body: JSON.stringify({
 				scopes,
 				note
 			}),
 			password: this.password,
 			user: this.username,
-		}).then(responseHandler)
+		};
+		return request.post(endpoint, options).then(responseHandler)
 		.then(response => response.json<AuthResponse>());
 	}
 
