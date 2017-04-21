@@ -20,5 +20,6 @@ export = function (grunt: IGrunt) {
 	grunt.registerTask('dev', [ 'clean', 'tslint', 'build' ]);
 	grunt.registerTask('test', [ 'dev', 'intern' ]);
 	grunt.registerTask('init', [ 'prompt:github', 'initAutomation' ]);
-	grunt.registerTask('cd-latest', [ 'prebuild', 'sync:latest', 'clean:latest', 'copy:latest', 'publish:latest' ]);
+	grunt.registerTask('cd-latest', [ 'prebuild', 'sync:latest', 'clean:repo', 'copy:latest', 'publish:latest' ]);
+	grunt.registerTask('cd-api', [ 'prebuild', 'sync:gh-pages', 'clean:repo', 'api', 'copy:gh-pages', 'publish:gh-pages' ]);
 };

@@ -90,8 +90,9 @@ export default class Git {
 	}
 
 	async areFilesChanged(): Promise<boolean> {
-		const result: ChildProcess = await promiseExec('git status --porcelain', { silent: true, cwd: this.cloneDirectory });
-		return result.stdout.toString() !== '';
+		const proc = await exec('git status --porcelain', { silent: true, cwd: this.cloneDirectory });
+		const changes = (await toString(proc.stdout)).trim();
+		return changes !== '';
 	}
 
 	async hasConfig(key: string): Promise<boolean> {

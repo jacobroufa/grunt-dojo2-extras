@@ -11,7 +11,7 @@ script:
   - grunt test
 deploy:
   provider: script
-  script: "grunt cd-latest"
+  script: "grunt cd-latest && grunt cd-api"
   skip_cleanup: true
   on:
     branch: master

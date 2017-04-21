@@ -33,7 +33,8 @@ export default async function publish(options: Options) {
 		return;
 	}
 
-	if (!(await repo.areFilesChanged())) {
+	const hasChanges = await repo.areFilesChanged();
+	if (!hasChanges) {
 		logger.info('No files changed. Skipping publish.');
 		return;
 	}

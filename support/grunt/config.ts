@@ -1,23 +1,41 @@
 import { repositorySource } from '../../src/util/environment';
 
-export const latestDirectory = '_latest';
+export const apiDirectory = '_apidocs';
+
+export const cloneDirectory = '.repo';
 
 export const distDirectory = '_build';
 
 export const [ repoOwner, repoName ] = repositorySource().split('/');
 
+export const api = {
+	src: {
+		options: {
+			dest: '<%= apiDirectory %>',
+			format: 'html',
+			src: 'src'
+		}
+	}
+};
+
 export const clean = {
 	build: [ '<%= distDirectory %>' ],
-	dists: [ '<%= latestDirectory %>' ],
-	latest: [ '<%= latestDirectory %>/**/*', '!.git/**' ]
+	dists: [ '<%= cloneDirectory %>' ],
+	repo: [ '<%= cloneDirectory %>/**/*', '!.git/**' ]
 };
 
 export const copy = {
+	'gh-pages': {
+		expand: true,
+		cwd: '<%= apiDirectory %>',
+		src: '**',
+		dest: '<%= cloneDirectory %>'
+	},
 	latest: {
 		expand: true,
 		cwd: '<%= distDirectory %>',
 		src: '**',
-		dest: '<%= latestDirectory %>'
+		dest: '<%= cloneDirectory %>'
 	},
 	staticDistFiles: {
 		expand: true,
@@ -68,10 +86,16 @@ export const prompt = {
 };
 
 export const publish = {
-	'latest': {
+	'gh-pages': {
+		options: {
+			branch: 'gh-pages',
+			cloneDirectory: '<%= cloneDirectory %>'
+		}
+	},
+	latest: {
 		options: {
 			branch: 'latest',
-			cloneDirectory: '<%= latestDirectory %>'
+			cloneDirectory: '<%= cloneDirectory %>'
 		}
 	}
 };
@@ -91,7 +115,13 @@ export const sync = {
 	latest: {
 		options: {
 			branch: 'latest',
-			cloneDirectory: '<%= latestDirectory %>'
+			cloneDirectory: '<%= cloneDirectory %>'
+		}
+	},
+	'gh-pages': {
+		options: {
+			branch: 'gh-pages',
+			cloneDirectory: '<%= cloneDirectory %>'
 		}
 	}
 };

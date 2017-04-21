@@ -1,108 +1,62 @@
-import GitHub, { Release } from '../util/GitHub';
 import { join, basename, dirname } from 'path';
-import { existsSync } from 'fs';
-import Git from '../util/Git';
 import { promiseExec as exec } from '../util/process';
 import { sync as mkdirp } from 'mkdirp';
-import * as semver from 'semver';
 import { logger } from '../log';
+import { existsSync } from 'fs';
 
-export interface Options {
-	apiThemeDirectory: string;
-	buildDirectory: string;
-	filter?: string | ((version: Release) => boolean);
-	format: 'html' | 'json';
-	owner: string;
-	repoName: string;
+export interface BaseOptions {
+	source: string;
 	target: string;
 }
 
-export interface ReleaseFilter {
-	(release: Release): boolean;
+export interface HtmlOptions extends BaseOptions {
+	themeDirectory: string;
+	format: 'html';
 }
 
-function noopFilter() {
-	return true;
+export interface JsonOptions extends BaseOptions {
+	format: 'json';
 }
 
-async function filterReleases(releases: Release[], baseDirectory: string, filter: ReleaseFilter | string = noopFilter) {
-	// Ensure a sorted list
-	releases = releases.filter(function (release) {
-		return semver.clean(release.name);
-	}).sort(function (a: Release, b: Release) {
-		const left = semver.clean(a.name);
-		const right = semver.clean(b.name);
-		return semver.compare(left, right, true);
-	});
+export interface Options extends BaseOptions {
+	themeDirectory?: HtmlOptions['themeDirectory'];
+	format: HtmlOptions['format'] | JsonOptions['format'];
+}
 
-	let filterMethod: ReleaseFilter = noopFilter;
-	if (filter === 'latest') {
-		releases = releases.slice(-1);
+async function installDependencies(repoDir: string) {
+	logger.info('Installing dependencies');
+	const typingsJson = join(repoDir, 'typings.json');
+	await exec('npm install', {silent: false, cwd: repoDir});
+
+	if (existsSync(typingsJson)) {
+		await exec('typings install', {silent: false, cwd: repoDir});
 	}
-	else if (typeof filter === 'string') {
-		filterMethod = function (release: Release) {
-			const version = semver.clean(release.name);
-			return semver.satisfies(version, filter);
-		};
-	}
-
-	return releases.filter(function (release: Release) {
-		const path = join(baseDirectory, release.name);
-		return filterMethod(release) && !existsSync(path);
-	});
-}
+	return typingsJson;
+};
 
 export default async function typedoc(options: Options) {
-	const { target, apiThemeDirectory, buildDirectory, format, owner, repoName } = options;
-	const repo = new GitHub(owner, repoName);
-	const releases = await repo.fetchReleases();
-	const targetDir = join(format === 'json' ? dirname(target) : target, repo.name);
-	const missingReleases = await filterReleases(releases, targetDir, options.filter);
+	const { themeDirectory, format, source, target } = options;
+	const targetDir = format === 'json' ? dirname(target) : target;
+	const targetFile = format === 'json' ? basename(target) || 'api.json' : null;
+	const typedocBin = require.resolve('typedoc/bin/typedoc');
 
-	if (missingReleases.length) {
-		const versions = missingReleases.map(release => release.name).join(', ');
-		logger.info(`Preparing to build API documentation for ${ repo.toString() } versions: ${ versions }`);
+	logger.info('Building API Documentation');
+	mkdirp(targetDir);
+
+	// install any dependencies to the package
+	await installDependencies(source);
+
+	let outputOption: string;
+	if (format === 'json') {
+		outputOption = `--json ${ join(targetDir, targetFile) }`;
 	}
 	else {
-		logger.info(`API documentation for ${ repo.toString() } is up to date`);
+		outputOption = `--out ${ target }`;
+
+		if (themeDirectory) {
+			outputOption += ` --theme ${ themeDirectory }`;
+		}
 	}
-
-	for (let release of missingReleases) {
-		const version = release.name;
-		const repoDir = join(buildDirectory, repo.name, version, 'src');
-		const packageTargetDir = join(targetDir, version);
-		logger.info(`building api docs for ${ repo.owner }/${ repo.name }@${ version }`);
-
-		// Ensure we have a copy of the repository we want to make API docs from
-		if (!existsSync(repoDir)) {
-			const git = new Git(repoDir);
-			await git.ensureConfig();
-			await git.clone(repo.url);
-			await git.checkout(version);
-		}
-
-		// install any dependencies to the package
-		logger.info('Installing dependencies');
-		const typingsJson = join(repoDir, 'typings.json');
-		await exec('npm install', { silent: false, cwd: repoDir });
-
-		if (existsSync(typingsJson)) {
-			await exec('typings install', { silent: false, cwd: repoDir });
-		}
-
-		// build docs
-		logger.info('Building API Documentation');
-		mkdirp(packageTargetDir);
-		const typedocBin = require.resolve('typedoc/bin/typedoc');
-		let outputOption: string;
-		if (format === 'json') {
-			const targetFile = basename(target) || 'api.json';
-			outputOption = `--json ${ join(packageTargetDir, targetFile) }`;
-		}
-		else {
-			outputOption = `--out ${ packageTargetDir } --theme ${ apiThemeDirectory }`;
-		}
-		const command = `${ typedocBin } --mode file ${ repoDir } ${ outputOption } --externalPattern '**/+(example|examples|node_modules|tests|typings)/**/*.ts' --excludeExternals --excludeNotExported --ignoreCompilerErrors`;
-		await exec(command);
-	}
-}
+	const command = `${ typedocBin } --mode file ${ source } ${ outputOption } --externalPattern '**/+(example|examples|node_modules|tests|typings)/**/*.ts' --excludeExternals --excludeNotExported --ignoreCompilerErrors`;
+	await exec(command);
+};
