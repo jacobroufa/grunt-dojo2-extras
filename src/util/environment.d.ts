@@ -1,0 +1,15 @@
+import { PublishMode } from '../commands/publish';
+export declare function commitMessage(): string;
+export declare function currentBranch(): string;
+export declare function decryptIvName(): string;
+export declare function decryptKeyName(): string;
+export declare function encryptedKeyFile(file?: string): any;
+export declare function gitCommit(): string;
+export declare function hasGitCredentials(keyFile?: string): boolean;
+export declare function hexoRootOverride(): any;
+export declare function hasKeyFile(file?: string): boolean;
+export declare function isCronJob(): boolean;
+export declare function isRunningOnTravis(): boolean;
+export declare function keyFile(): string;
+export declare function publishMode(defaultValue?: PublishMode): PublishMode;
+export declare function repositorySource(): string;
