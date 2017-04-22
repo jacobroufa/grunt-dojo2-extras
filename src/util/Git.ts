@@ -4,6 +4,7 @@ import { relative } from 'path';
 import { ChildProcess } from 'child_process';
 import { toString } from './streams';
 import { logger } from '../log';
+import * as env from '../util/environment';
 
 export default class Git {
 	cloneDirectory: string | null;
@@ -12,7 +13,7 @@ export default class Git {
 
 	url?: string;
 
-	constructor(cloneDirectory: string = process.cwd(), keyFile: string = 'deploy_key') {
+	constructor(cloneDirectory: string = process.cwd(), keyFile: string = env.keyFile()) {
 		this.cloneDirectory = cloneDirectory;
 		this.keyFile = keyFile;
 	}

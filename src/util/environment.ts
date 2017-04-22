@@ -29,7 +29,7 @@ export function decryptKeyName() {
  * @return the name of the encrypted keyFile
  */
 export function encryptedKeyFile(file = keyFile()) {
-	return `${ file }.enc`;
+	return process.env.ENCRYPTED_KEY_FILE || `${ file }.enc`;
 }
 
 /**
