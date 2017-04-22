@@ -1,6 +1,6 @@
 # grunt-extras
 
-[![Build Status](https://travis-ci.org/devpaul/grunt-extras.svg?branch=master)](https://travis-ci.org/devpaul/grunt-extras)
+[![Build Status](https://travis-ci.org/dojo/grunt-extras.svg?branch=master)](https://travis-ci.org/dojo/grunt-extras)
 
 grunt-extras provides tools in support of continuous deployment of projects, packages, and documentation.
 
