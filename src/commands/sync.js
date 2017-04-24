@@ -87,7 +87,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
                         _a.sent();
                         _a.label = 5;
                     case 5: return [4 /*yield*/, git.checkout(branch)
-                            .then(function () { return git.pull(); }, function () { return git.createOrphan(branch); })];
+                            .then(function () { return git.pull('origin', branch); }, function () { return git.createOrphan(branch); })];
                     case 6:
                         _a.sent();
                         return [2 /*return*/];

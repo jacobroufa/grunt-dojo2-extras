@@ -17,7 +17,7 @@ export default class Git {
     hasConfig(key: string): Promise<boolean>;
     hasDeployCredentials(): boolean;
     headRevision(): Promise<string>;
-    pull(): Promise<ChildProcess>;
+    pull(remote?: string, branch?: string): Promise<ChildProcess>;
     push(branch?: string, remote?: string): Promise<ChildProcess>;
     setConfig(key: string, value: string): Promise<ChildProcess>;
 }

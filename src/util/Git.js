@@ -224,8 +224,13 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
                 });
             });
         };
-        Git.prototype.pull = function () {
-            return this.execSSHAgent('git', ['pull'], {
+        Git.prototype.pull = function (remote, branch) {
+            var command = ['pull'];
+            if (remote || branch) {
+                command.push(remote);
+                command.push(branch);
+            }
+            return this.execSSHAgent('git', command, {
                 cwd: this.cloneDirectory
             });
         };
