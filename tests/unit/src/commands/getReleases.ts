@@ -75,7 +75,7 @@ registerSuite({
 		latestFilter() {
 			const { latestFilter } = module;
 			const list = [ 'one', 'two', 'three' ];
-			assert.deepEqual(list.filter(latestFilter), [ 'one' ]);
+			assert.deepEqual(list.filter(latestFilter), [ 'three' ]);
 		},
 
 		createVersionFilter: {

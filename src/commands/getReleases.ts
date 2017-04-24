@@ -48,8 +48,8 @@ export function createJsonApiMissingFilter(project: string, directory: string): 
  * @param index the index of the release
  * @return if the release is the latest
  */
-export function latestFilter(_release: Release, index: number) {
-	return index === 0;
+export function latestFilter(_release: Release, index: number, array: Release[]) {
+	return index === array.length - 1;
 }
 
 /**
