@@ -11,7 +11,7 @@ let existsSyncStub: SinonStub;
 function assertExistsFilter(builder: any, expected: boolean, filename: string) {
 	const filter = builder('project', 'directory');
 	existsSyncStub.returns(expected);
-	assert.strictEqual(filter({ name: 'version' }), expected);
+	assert.strictEqual(filter({ name: 'version' }), !expected);
 	assert.isTrue(existsSyncStub.called, 'existSync was not called');
 	assert.strictEqual(existsSyncStub.firstCall.args[0], filename);
 }
@@ -48,27 +48,27 @@ registerSuite({
 	},
 
 	filters: {
-		createHtmlExistsFilter: {
-			'exists; returns true'() {
-				const { createHtmlExistsFilter } = module;
-				assertExistsFilter(createHtmlExistsFilter, true, 'directory/project/version');
+		createHtmlApiMissingFilter: {
+			'exists; returns false'() {
+				const { createHtmlApiMissingFilter } = module;
+				assertExistsFilter(createHtmlApiMissingFilter, true, 'directory/project/version');
 			},
 
-			'does not exist; returns false'() {
-				const { createHtmlExistsFilter } = module;
-				assertExistsFilter(createHtmlExistsFilter, true, 'directory/project/version');
+			'does not exist; returns true'() {
+				const { createHtmlApiMissingFilter } = module;
+				assertExistsFilter(createHtmlApiMissingFilter, false, 'directory/project/version');
 			}
 		},
 
-		createJsonExistsFilter: {
-			'exists; returns true'() {
-				const { createJsonExistsFilter } = module;
-				assertExistsFilter(createJsonExistsFilter, true, 'directory/project-version.json');
+		createJsonApiMissingFilter: {
+			'exists; returns false'() {
+				const { createJsonApiMissingFilter } = module;
+				assertExistsFilter(createJsonApiMissingFilter, true, 'directory/project-version.json');
 			},
 
-			'does not exist; returns false'() {
-				const { createJsonExistsFilter } = module;
-				assertExistsFilter(createJsonExistsFilter, false, 'directory/project-version.json');
+			'does not exist; returns true'() {
+				const { createJsonApiMissingFilter } = module;
+				assertExistsFilter(createJsonApiMissingFilter, false, 'directory/project-version.json');
 			}
 		},
 

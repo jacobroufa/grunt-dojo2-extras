@@ -4,8 +4,8 @@ import wrapAsyncTask from './util/wrapAsyncTask';
 import GitHub, { Release } from '../src/util/GitHub';
 import sync from '../src/commands/sync';
 import getReleases, {
-	createHtmlExistsFilter,
-	createJsonExistsFilter,
+	createHtmlApiMissingFilter,
+	createJsonApiMissingFilter,
 	createVersionFilter,
 	getHtmlApiPath,
 	getJsonApiPath,
@@ -49,10 +49,10 @@ async function getMissing(repo: GitHub, options: TaskOptions): Promise<Release[]
 	const filters = getFilterOptions(options.filter);
 
 	if (options.format === 'json') {
-		filters.push(createJsonExistsFilter(repo.name, options.dest));
+		filters.push(createJsonApiMissingFilter(repo.name, options.dest));
 	}
 	else {
-		filters.push(createHtmlExistsFilter(repo.name, options.dest));
+		filters.push(createHtmlApiMissingFilter(repo.name, options.dest));
 	}
 
 	return getReleases(repo, filters);

@@ -26,9 +26,9 @@ export function getJsonApiPath(base: string, project: string, version: string) {
  * @param directory the base directory where html api docs are stored
  * @return a filter for existing html api docs
  */
-export function createHtmlExistsFilter(project: string, directory: string): ReleaseFilter {
+export function createHtmlApiMissingFilter(project: string, directory: string): ReleaseFilter {
 	return (release: Release) => {
-		return existsSync(getHtmlApiPath(directory, project, release.name));
+		return !existsSync(getHtmlApiPath(directory, project, release.name));
 	};
 }
 
@@ -37,9 +37,9 @@ export function createHtmlExistsFilter(project: string, directory: string): Rele
  * @param directory the base directory where json api docs are stored
  * @return a filter for existing json api docs
  */
-export function createJsonExistsFilter(project: string, directory: string): ReleaseFilter {
+export function createJsonApiMissingFilter(project: string, directory: string): ReleaseFilter {
 	return (release: Release) => {
-		return existsSync(getJsonApiPath(directory, project, release.name));
+		return !existsSync(getJsonApiPath(directory, project, release.name));
 	};
 }
 
