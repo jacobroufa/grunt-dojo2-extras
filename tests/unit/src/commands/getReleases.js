@@ -54,7 +54,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     function assertExistsFilter(builder, expected, filename) {
         var filter = builder('project', 'directory');
         existsSyncStub.returns(expected);
-        assert.strictEqual(filter({ name: 'version' }), expected);
+        assert.strictEqual(filter({ name: 'version' }), !expected);
         assert.isTrue(existsSyncStub.called, 'existSync was not called');
         assert.strictEqual(existsSyncStub.firstCall.args[0], filename);
     }
@@ -83,24 +83,24 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
             assert.strictEqual(getReleases_1.getJsonApiPath('base', 'project', 'version'), 'base/project-version.json');
         },
         filters: {
-            createHtmlExistsFilter: {
-                'exists; returns true': function () {
-                    var createHtmlExistsFilter = module.createHtmlExistsFilter;
-                    assertExistsFilter(createHtmlExistsFilter, true, 'directory/project/version');
+            createHtmlApiMissingFilter: {
+                'exists; returns false': function () {
+                    var createHtmlApiMissingFilter = module.createHtmlApiMissingFilter;
+                    assertExistsFilter(createHtmlApiMissingFilter, true, 'directory/project/version');
                 },
-                'does not exist; returns false': function () {
-                    var createHtmlExistsFilter = module.createHtmlExistsFilter;
-                    assertExistsFilter(createHtmlExistsFilter, true, 'directory/project/version');
+                'does not exist; returns true': function () {
+                    var createHtmlApiMissingFilter = module.createHtmlApiMissingFilter;
+                    assertExistsFilter(createHtmlApiMissingFilter, false, 'directory/project/version');
                 }
             },
-            createJsonExistsFilter: {
-                'exists; returns true': function () {
-                    var createJsonExistsFilter = module.createJsonExistsFilter;
-                    assertExistsFilter(createJsonExistsFilter, true, 'directory/project-version.json');
+            createJsonApiMissingFilter: {
+                'exists; returns false': function () {
+                    var createJsonApiMissingFilter = module.createJsonApiMissingFilter;
+                    assertExistsFilter(createJsonApiMissingFilter, true, 'directory/project-version.json');
                 },
-                'does not exist; returns false': function () {
-                    var createJsonExistsFilter = module.createJsonExistsFilter;
-                    assertExistsFilter(createJsonExistsFilter, false, 'directory/project-version.json');
+                'does not exist; returns true': function () {
+                    var createJsonApiMissingFilter = module.createJsonApiMissingFilter;
+                    assertExistsFilter(createJsonApiMissingFilter, false, 'directory/project-version.json');
                 }
             },
             latestFilter: function () {

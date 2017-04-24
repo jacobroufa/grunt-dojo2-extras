@@ -55,18 +55,18 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         return path_1.join(base, project + "-" + version + ".json");
     }
     exports.getJsonApiPath = getJsonApiPath;
-    function createHtmlExistsFilter(project, directory) {
+    function createHtmlApiMissingFilter(project, directory) {
         return function (release) {
-            return fs_1.existsSync(getHtmlApiPath(directory, project, release.name));
+            return !fs_1.existsSync(getHtmlApiPath(directory, project, release.name));
         };
     }
-    exports.createHtmlExistsFilter = createHtmlExistsFilter;
-    function createJsonExistsFilter(project, directory) {
+    exports.createHtmlApiMissingFilter = createHtmlApiMissingFilter;
+    function createJsonApiMissingFilter(project, directory) {
         return function (release) {
-            return fs_1.existsSync(getJsonApiPath(directory, project, release.name));
+            return !fs_1.existsSync(getJsonApiPath(directory, project, release.name));
         };
     }
-    exports.createJsonExistsFilter = createJsonExistsFilter;
+    exports.createJsonApiMissingFilter = createJsonApiMissingFilter;
     function latestFilter(_release, index) {
         return index === 0;
     }

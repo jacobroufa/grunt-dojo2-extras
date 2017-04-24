@@ -66,10 +66,10 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
             return __generator(this, function (_a) {
                 filters = getFilterOptions(options.filter);
                 if (options.format === 'json') {
-                    filters.push(getReleases_1.createJsonExistsFilter(repo.name, options.dest));
+                    filters.push(getReleases_1.createJsonApiMissingFilter(repo.name, options.dest));
                 }
                 else {
-                    filters.push(getReleases_1.createHtmlExistsFilter(repo.name, options.dest));
+                    filters.push(getReleases_1.createHtmlApiMissingFilter(repo.name, options.dest));
                 }
                 return [2 /*return*/, getReleases_1.default(repo, filters)];
             });
