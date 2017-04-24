@@ -113,8 +113,13 @@ export default class Git {
 		return (await toString(proc.stdout)).trim();
 	}
 
-	pull() {
-		return this.execSSHAgent('git', ['pull'], {
+	pull(remote?: string, branch?: string) {
+		const command = [ 'pull' ];
+		if (remote || branch) {
+			command.push(remote);
+			command.push(branch);
+		}
+		return this.execSSHAgent('git', command, {
 			cwd: this.cloneDirectory
 		});
 	}

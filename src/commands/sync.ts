@@ -32,7 +32,7 @@ export default async function sync(options: Options) {
 	}
 	await git.checkout(branch)
 		.then(
-			() => git.pull(),
+			() => git.pull('origin', branch),
 			() => git.createOrphan(branch)
 		);
 }
