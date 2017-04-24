@@ -1,9 +1,17 @@
 import IMultiTask = grunt.task.IMultiTask;
 import typedoc, { Options as TypedocOptions } from '../src/commands/typedoc';
-import missingApis, { ReleaseFilter } from '../src/commands/missingApis';
 import wrapAsyncTask from './util/wrapAsyncTask';
-import GitHub from '../src/util/GitHub';
+import GitHub, { Release } from '../src/util/GitHub';
 import sync from '../src/commands/sync';
+import getReleases, {
+	createHtmlExistsFilter,
+	createJsonExistsFilter,
+	createVersionFilter,
+	getHtmlApiPath,
+	getJsonApiPath,
+	latestFilter,
+	ReleaseFilter
+} from '../src/commands/getReleases';
 
 interface BaseOptions {
 	dest: string;
@@ -14,7 +22,7 @@ interface BaseOptions {
 
 interface RemoteApiOptions extends BaseOptions {
 	cloneDirectory: string;
-	filter?: ReleaseFilter;
+	filter?: ReleaseFilter | ReleaseFilter[] | string;
 	repo: {
 		owner: string;
 		name: string;
@@ -37,33 +45,75 @@ function getGitHub(repo: RemoteApiOptions['repo']) {
 	}
 }
 
+async function getMissing(repo: GitHub, options: TaskOptions): Promise<Release[]> {
+	const filters = getFilterOptions(options.filter);
+
+	if (options.format === 'json') {
+		filters.push(createJsonExistsFilter(repo.name, options.dest));
+	}
+	else {
+		filters.push(createHtmlExistsFilter(repo.name, options.dest));
+	}
+
+	return getReleases(repo, filters);
+}
+
+function getFilterOptions(filter?: RemoteApiOptions['filter']): ReleaseFilter[] {
+	if (!filter) {
+		return [];
+	}
+	if (filter === 'latest') {
+		return [ latestFilter ];
+	}
+	if (typeof filter === 'string') {
+		return [ createVersionFilter(filter) ];
+	}
+	if (Array.isArray(filter)) {
+		return filter;
+	}
+
+	return [ filter ];
+}
+
 export = function (grunt: IGrunt) {
 	async function typedocTask(this: IMultiTask<any>) {
 		const options: any = this.options<Partial<TaskOptions>>({
 			format: 'html'
 		});
-		const { dest, format, src, themeDirectory } = options;
+		const { dest, format, themeDirectory } = options;
 
 		if (isRemoteOptions(options)) {
-			const { cloneDirectory, filter } = options;
+			const { cloneDirectory } = options;
 			const repo = getGitHub(options.repo);
-			const missing = await missingApis(dest, repo, filter);
+			const missing = await getMissing(repo, options);
+			const pathTemplate = format === 'json' ? getJsonApiPath : getHtmlApiPath;
 
 			for (const release of missing) {
+				const target = pathTemplate(dest, repo.name, release.name);
+				const source = cloneDirectory;
+
 				await sync({
 					branch: release.name,
 					cloneDirectory,
 					url: repo.url
 				});
+
+				await typedoc({
+					themeDirectory,
+					format,
+					source,
+					target
+				});
 			}
 		}
-
-		await typedoc({
-			themeDirectory,
-			format,
-			source: src,
-			target: dest
-		});
+		else {
+			await typedoc({
+				themeDirectory,
+				format,
+				source: options.src,
+				target: dest
+			});
+		}
 	}
 
 	grunt.registerMultiTask('api', wrapAsyncTask(typedocTask));

@@ -3,7 +3,7 @@
 		"allowSyntheticDefaultImports": true,
 		"baseUrl": ".",
 		"declaration": true,
-		"importHelpers": true,
+		"importHelpers": false,
 		"lib": [
 			"DOM",
 			"ES5",

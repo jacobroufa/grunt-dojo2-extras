@@ -3,7 +3,7 @@ import { RootRequire } from '@dojo/interfaces/loader';
 
 declare const require: RootRequire;
 
-export default function loadModule(mid: string, mocks: any, returnDefault: boolean = true) {
+export default function loadModule<T>(mid: string, mocks: any, returnDefault: boolean = true): T {
 	mockery.enable({
 		useCleanCache: true,
 		warnOnUnregistered: false
