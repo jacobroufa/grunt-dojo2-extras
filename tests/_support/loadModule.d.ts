@@ -1,2 +1,2 @@
-export default function loadModule(mid: string, mocks: any, returnDefault?: boolean): any;
+export default function loadModule<T>(mid: string, mocks: any, returnDefault?: boolean): T;
 export declare function cleanupModuleMocks(): void;
