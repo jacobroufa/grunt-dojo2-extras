@@ -67,8 +67,8 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         };
     }
     exports.createJsonApiMissingFilter = createJsonApiMissingFilter;
-    function latestFilter(_release, index) {
-        return index === 0;
+    function latestFilter(_release, index, array) {
+        return index === array.length - 1;
     }
     exports.latestFilter = latestFilter;
     function createVersionFilter(comp) {

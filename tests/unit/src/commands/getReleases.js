@@ -106,7 +106,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
             latestFilter: function () {
                 var latestFilter = module.latestFilter;
                 var list = ['one', 'two', 'three'];
-                assert.deepEqual(list.filter(latestFilter), ['one']);
+                assert.deepEqual(list.filter(latestFilter), ['three']);
             },
             createVersionFilter: {
                 'satisfies semver; returns true': function () {
