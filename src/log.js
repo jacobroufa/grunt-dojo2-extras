@@ -22,7 +22,7 @@ var __extends = (this && this.__extends) || (function () {
     var winston_1 = require("winston");
     var stream_1 = require("stream");
     exports.logger = new winston_1.Logger({
-        level: 'debug',
+        level: 'info',
         transports: [
             new winston_1.transports.Console({
                 showLevel: false

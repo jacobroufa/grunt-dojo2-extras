@@ -39,7 +39,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (v !== undefined) module.exports = v;
     }
     else if (typeof define === "function" && define.amd) {
-        define(["require", "exports", "../src/commands/typedoc", "./util/wrapAsyncTask", "../src/util/GitHub", "../src/commands/sync", "../src/commands/getReleases"], factory);
+        define(["require", "exports", "../src/commands/typedoc", "./util/wrapAsyncTask", "../src/util/GitHub", "../src/commands/sync", "../src/commands/getReleases", "path", "fs", "../src/commands/installDependencies"], factory);
     }
 })(function (require, exports) {
     "use strict";
@@ -48,8 +48,11 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     var GitHub_1 = require("../src/util/GitHub");
     var sync_1 = require("../src/commands/sync");
     var getReleases_1 = require("../src/commands/getReleases");
+    var path_1 = require("path");
+    var fs_1 = require("fs");
+    var installDependencies_1 = require("../src/commands/installDependencies");
     function isRemoteOptions(options) {
-        return !!options.repo && !!options.cloneDirectory;
+        return !!options.repo;
     }
     function getGitHub(repo) {
         if (typeof repo === 'string') {
@@ -90,20 +93,43 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         }
         return [filter];
     }
+    function createTempDirectory(name) {
+        if (name === void 0) { name = ''; }
+        return fs_1.mkdtempSync(path_1.join('.sync', name));
+    }
+    function createTypedocOptions(options, target, source) {
+        var typedocOptions = Object.assign({}, options.typedoc, {
+            source: source
+        });
+        if (options.format === 'json') {
+            typedocOptions.json = target;
+        }
+        else {
+            typedocOptions.out = target;
+        }
+        return typedocOptions;
+    }
     return function (grunt) {
         function typedocTask() {
             return __awaiter(this, void 0, void 0, function () {
-                var options, dest, format, themeDirectory, cloneDirectory, repo, missing, pathTemplate, _i, missing_1, release, target, source;
+                var options, src, dest, format, repo, cloneDirectory, missing, pathTemplate, _i, missing_1, release, target, source;
                 return __generator(this, function (_a) {
                     switch (_a.label) {
                         case 0:
                             options = this.options({
-                                format: 'html'
+                                format: 'html',
+                                typedoc: {
+                                    mode: 'file',
+                                    externalPattern: '**/+(example|examples|node_modules|tests|typings)/**/*.ts',
+                                    excludeExternals: true,
+                                    excludeNotExported: true,
+                                    ignoreCompilerErrors: true
+                                }
                             });
-                            dest = options.dest, format = options.format, themeDirectory = options.themeDirectory;
-                            if (!isRemoteOptions(options)) return [3 /*break*/, 7];
-                            cloneDirectory = options.cloneDirectory;
+                            src = options.src, dest = options.dest, format = options.format;
+                            if (!isRemoteOptions(options)) return [3 /*break*/, 9];
                             repo = getGitHub(options.repo);
+                            cloneDirectory = options.cloneDirectory ? options.cloneDirectory : createTempDirectory(repo.name);
                             return [4 /*yield*/, getMissing(repo, options)];
                         case 1:
                             missing = _a.sent();
@@ -111,7 +137,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
                             _i = 0, missing_1 = missing;
                             _a.label = 2;
                         case 2:
-                            if (!(_i < missing_1.length)) return [3 /*break*/, 6];
+                            if (!(_i < missing_1.length)) return [3 /*break*/, 8];
                             release = missing_1[_i];
                             target = pathTemplate(dest, repo.name, release.name);
                             source = cloneDirectory;
@@ -122,29 +148,30 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
                                 })];
                         case 3:
                             _a.sent();
-                            return [4 /*yield*/, typedoc_1.default({
-                                    themeDirectory: themeDirectory,
-                                    format: format,
-                                    source: source,
-                                    target: target
-                                })];
+                            if (!(options.skipInstall !== true)) return [3 /*break*/, 5];
+                            return [4 /*yield*/, installDependencies_1.default(src)];
                         case 4:
                             _a.sent();
                             _a.label = 5;
-                        case 5:
+                        case 5: return [4 /*yield*/, typedoc_1.default(createTypedocOptions(options, target, source))];
+                        case 6:
+                            _a.sent();
+                            _a.label = 7;
+                        case 7:
                             _i++;
                             return [3 /*break*/, 2];
-                        case 6: return [3 /*break*/, 9];
-                        case 7: return [4 /*yield*/, typedoc_1.default({
-                                themeDirectory: themeDirectory,
-                                format: format,
-                                source: options.src,
-                                target: dest
-                            })];
-                        case 8:
+                        case 8: return [3 /*break*/, 13];
+                        case 9:
+                            if (!(options.skipInstall === false)) return [3 /*break*/, 11];
+                            return [4 /*yield*/, installDependencies_1.default(src)];
+                        case 10:
                             _a.sent();
-                            _a.label = 9;
-                        case 9: return [2 /*return*/];
+                            _a.label = 11;
+                        case 11: return [4 /*yield*/, typedoc_1.default(createTypedocOptions(options, dest, src))];
+                        case 12:
+                            _a.sent();
+                            _a.label = 13;
+                        case 13: return [2 /*return*/];
                     }
                 });
             });

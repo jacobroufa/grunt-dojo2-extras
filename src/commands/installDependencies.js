@@ -39,67 +39,36 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (v !== undefined) module.exports = v;
     }
     else if (typeof define === "function" && define.amd) {
-        define(["require", "exports", "path", "../util/process", "mkdirp", "../log"], factory);
+        define(["require", "exports", "../log", "path", "../util/process", "fs"], factory);
     }
 })(function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    var log_1 = require("../log");
     var path_1 = require("path");
     var process_1 = require("../util/process");
-    var mkdirp_1 = require("mkdirp");
-    var log_1 = require("../log");
-    function runTypedoc(options) {
+    var fs_1 = require("fs");
+    function installDependencies(dir) {
         return __awaiter(this, void 0, void 0, function () {
-            var typedocBin, excluded, commandOptions, name_1, value, command;
+            var typingsJson;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        typedocBin = require.resolve('typedoc/bin/typedoc');
-                        excluded = ['source'];
-                        commandOptions = [];
-                        for (name_1 in options) {
-                            if (excluded.indexOf(name_1) === -1) {
-                                value = options[name_1];
-                                if (typeof value === 'boolean') {
-                                    commandOptions.push("--" + name_1);
-                                }
-                                else {
-                                    commandOptions.push("--" + name_1 + " " + value);
-                                }
-                            }
-                        }
-                        if (options.source) {
-                            commandOptions.push(options.source);
-                        }
-                        command = typedocBin + " " + commandOptions.join(' ');
-                        return [4 /*yield*/, process_1.promiseExec(command)];
+                        log_1.logger.info('Installing dependencies');
+                        typingsJson = path_1.join(dir, 'typings.json');
+                        return [4 /*yield*/, process_1.exec('npm install', { silent: false, cwd: dir })];
                     case 1:
                         _a.sent();
-                        return [2 /*return*/];
+                        if (!fs_1.existsSync(typingsJson)) return [3 /*break*/, 3];
+                        return [4 /*yield*/, process_1.exec('typings install', { silent: false, cwd: dir })];
+                    case 2:
+                        _a.sent();
+                        _a.label = 3;
+                    case 3: return [2 /*return*/, typingsJson];
                 }
             });
         });
     }
-    function isJsonOptions(options) {
-        return 'json' in options;
-    }
-    function typedoc(options) {
-        return __awaiter(this, void 0, void 0, function () {
-            var dir;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        dir = isJsonOptions(options) ? path_1.dirname(options.json) : options.out;
-                        log_1.logger.info("Building API Documentation to " + dir);
-                        mkdirp_1.sync(dir);
-                        return [4 /*yield*/, runTypedoc(options)];
-                    case 1:
-                        _a.sent();
-                        return [2 /*return*/];
-                }
-            });
-        });
-    }
-    exports.default = typedoc;
+    exports.default = installDependencies;
 });
-//# sourceMappingURL=typedoc.js.map
+//# sourceMappingURL=installDependencies.js.map

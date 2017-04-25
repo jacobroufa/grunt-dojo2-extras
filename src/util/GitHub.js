@@ -39,7 +39,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (v !== undefined) module.exports = v;
     }
     else if (typeof define === "function" && define.amd) {
-        define(["require", "exports", "@dojo/core/request", "./environment", "fs", "../util/streams"], factory);
+        define(["require", "exports", "@dojo/core/request", "./environment", "fs", "./streams"], factory);
     }
 })(function (require, exports) {
     "use strict";
@@ -47,7 +47,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     var request_1 = require("@dojo/core/request");
     var environment_1 = require("./environment");
     var fs_1 = require("fs");
-    var streams_1 = require("../util/streams");
+    var streams_1 = require("./streams");
     var API_URL = 'https://api.github.com';
     function responseHandler(response) {
         var statusCode = response.status;
@@ -98,7 +98,8 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
                         password: this.password,
                         user: this.username,
                     };
-                    return [2 /*return*/, request_1.default.post(endpoint, options).then(responseHandler)
+                    return [2 /*return*/, request_1.default.post(endpoint, options)
+                            .then(responseHandler)
                             .then(function (response) { return response.json(); })];
                 });
             });

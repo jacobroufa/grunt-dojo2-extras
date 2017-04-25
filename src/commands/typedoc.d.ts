@@ -1,16 +1,28 @@
 export interface BaseOptions {
     source: string;
-    target: string;
+    mode?: string;
+    exclude?: string;
+    includeDeclarations?: boolean;
+    externalPattern?: string;
+    excludeExternals?: boolean;
+    excludePrivate?: boolean;
+    module?: 'common.js' | 'amd' | 'system' | 'umd';
+    target?: 'ES3' | 'ES5' | 'ES6';
 }
 export interface HtmlOptions extends BaseOptions {
-    themeDirectory: string;
-    format: 'html';
+    out: string;
+    theme?: 'default' | 'minimal' | string;
+    name?: string;
+    readme?: string;
+    hideGenerator?: boolean;
+    gaID?: string;
+    gaSite?: string;
+    entryPoint?: string;
+    includes?: string;
+    media?: string;
 }
 export interface JsonOptions extends BaseOptions {
-    format: 'json';
+    json: string;
 }
-export interface Options extends BaseOptions {
-    themeDirectory?: HtmlOptions['themeDirectory'];
-    format: HtmlOptions['format'] | JsonOptions['format'];
-}
+export declare type Options = HtmlOptions | JsonOptions;
 export default function typedoc(options: Options): Promise<void>;
