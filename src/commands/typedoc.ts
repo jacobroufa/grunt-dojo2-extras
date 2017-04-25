@@ -1,62 +1,69 @@
-import { join, basename, dirname } from 'path';
+import { dirname } from 'path';
 import { promiseExec as exec } from '../util/process';
 import { sync as mkdirp } from 'mkdirp';
 import { logger } from '../log';
-import { existsSync } from 'fs';
 
 export interface BaseOptions {
 	source: string;
-	target: string;
+	mode?: string;
+	exclude?: string;
+	includeDeclarations?: boolean;
+	externalPattern?: string;
+	excludeExternals?: boolean;
+	excludePrivate?: boolean;
+	module?: 'common.js' | 'amd' | 'system' | 'umd';
+	target?: 'ES3' | 'ES5' | 'ES6';
 }
 
 export interface HtmlOptions extends BaseOptions {
-	themeDirectory: string;
-	format: 'html';
+	out: string;
+	theme?: 'default' | 'minimal' | string;
+	name?: string;
+	readme?: string;
+	hideGenerator?: boolean;
+	gaID?: string;
+	gaSite?: string;
+	entryPoint?: string;
+	includes?: string;
+	media?: string;
 }
 
 export interface JsonOptions extends BaseOptions {
-	format: 'json';
+	json: string;
 }
 
-export interface Options extends BaseOptions {
-	themeDirectory?: HtmlOptions['themeDirectory'];
-	format: HtmlOptions['format'] | JsonOptions['format'];
-}
+export type Options = HtmlOptions | JsonOptions;
 
-async function installDependencies(repoDir: string) {
-	logger.info('Installing dependencies');
-	const typingsJson = join(repoDir, 'typings.json');
-	await exec('npm install', {silent: false, cwd: repoDir});
-
-	if (existsSync(typingsJson)) {
-		await exec('typings install', {silent: false, cwd: repoDir});
-	}
-	return typingsJson;
-};
-
-export default async function typedoc(options: Options) {
-	const { themeDirectory, format, source, target } = options;
-	const targetDir = format === 'json' ? dirname(target) : target;
-	const targetFile = format === 'json' ? basename(target) || 'api.json' : null;
+async function runTypedoc(options: Options) {
 	const typedocBin = require.resolve('typedoc/bin/typedoc');
-
-	logger.info('Building API Documentation');
-	mkdirp(targetDir);
-
-	// install any dependencies to the package
-	await installDependencies(source);
-
-	let outputOption: string;
-	if (format === 'json') {
-		outputOption = `--json ${ join(targetDir, targetFile) }`;
-	}
-	else {
-		outputOption = `--out ${ target }`;
-
-		if (themeDirectory) {
-			outputOption += ` --theme ${ themeDirectory }`;
+	const excluded = [ 'source' ];
+	const commandOptions = [];
+	for (const name in options) {
+		if (excluded.indexOf(name) === -1) {
+			const value: any = (<any> options)[name];
+			if (typeof value === 'boolean') {
+				commandOptions.push(`--${ name }`);
+			}
+			else {
+				commandOptions.push(`--${ name } ${ value }`);
+			}
 		}
 	}
-	const command = `${ typedocBin } --mode file ${ source } ${ outputOption } --externalPattern '**/+(example|examples|node_modules|tests|typings)/**/*.ts' --excludeExternals --excludeNotExported --ignoreCompilerErrors`;
+	if (options.source) {
+		commandOptions.push(options.source);
+	}
+	const command = `${ typedocBin } ${ commandOptions.join(' ')}`;
 	await exec(command);
-};
+}
+
+function isJsonOptions(options: Options): options is JsonOptions {
+	return 'json' in options;
+}
+
+export default async function typedoc(options: Options) {
+	const dir = isJsonOptions(options) ? dirname(options.json) : options.out;
+
+	logger.info(`Building API Documentation to ${ dir }`);
+	mkdirp(dir);
+	await runTypedoc(options);
+}

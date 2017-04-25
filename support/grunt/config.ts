@@ -9,10 +9,26 @@ export const distDirectory = '_build';
 export const [ repoOwner, repoName ] = repositorySource().split('/');
 
 export const api = {
-	src: {
+	options: {
+		format: 'html',
+		typedoc: {
+			mode: 'file',
+			externalPattern: '"**/+(example|examples|node_modules|tests|typings)/**/*.ts"',
+			excludeExternals: true,
+			excludeNotExported: true,
+			ignoreCompilerErrors: true
+		}
+	},
+	html: {
 		options: {
 			dest: '<%= apiDirectory %>',
-			format: 'html',
+			src: 'src'
+		}
+	},
+	json: {
+		options: {
+			format: 'json',
+			dest: '<%= apiDirectory %>/api.json',
 			src: 'src'
 		}
 	}

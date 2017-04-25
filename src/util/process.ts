@@ -5,7 +5,7 @@ import {
 	ExecOptions as ChildExecOptions,
 	SpawnOptions as ChildSpawnOptions
 } from 'child_process';
-import { LogStream } from '../log';
+import { logger, LogStream } from '../log';
 
 export function promisify(proc: ChildProcess): Promise<ChildProcess> {
 	return new Promise(function (resolve, reject) {
@@ -37,6 +37,7 @@ function applyOptions(proc: ChildProcess, options: CommonProcessOptions) {
 }
 
 export function exec(command: string, options?: ExecOptions): ChildProcess {
+	logger.debug(`exec ${ command }`);
 	const proc: ChildProcess = execChild(command, options);
 	applyOptions(proc, options);
 	return proc;
@@ -52,6 +53,7 @@ export interface SpawnOptions extends CommonProcessOptions, ChildSpawnOptions {
 }
 
 export function spawn(command: string, args: string[], options?: SpawnOptions): ChildProcess {
+	logger.debug(`spawn ${ command } ${ args ? args.join(' ') : '' }`);
 	const proc: ChildProcess = spawnChild(command, args, options);
 	applyOptions(proc, options);
 	return proc;

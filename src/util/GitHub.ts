@@ -3,7 +3,7 @@ import { hasGitCredentials } from './environment';
 import { readFileSync } from 'fs';
 import { Response } from '@dojo/core/request';
 import { RequestOptions } from '@dojo/core/request/interfaces';
-import { toString } from '../util/streams';
+import { toString } from './streams';
 import { NodeResponse } from '@dojo/core/request/providers/node';
 
 export interface Release {
@@ -30,7 +30,7 @@ function responseHandler(response: NodeResponse): Response | Promise<Response> {
 	const statusCode = response.status;
 	if (statusCode < 200 || statusCode >= 300) {
 		const message = response.statusText;
-		return toString(response.nativeResponse)
+		return <never> toString(response.nativeResponse)
 			.then(function (body) {
 				throw new Error(`Github responded with ${ statusCode }. ${ message }. ${ body }`);
 			});
@@ -77,8 +77,9 @@ export default class GitHub {
 			password: this.password,
 			user: this.username,
 		};
-		return request.post(endpoint, options).then(responseHandler)
-		.then(response => response.json<AuthResponse>());
+		return request.post(endpoint, options)
+			.then(responseHandler)
+			.then(response => response.json<AuthResponse>());
 	}
 
 	async removeAuthorizationToken(id: string | number): Promise<Response> {

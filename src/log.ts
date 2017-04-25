@@ -2,7 +2,7 @@ import { Logger, transports, LoggerInstance } from 'winston';
 import { Writable, WritableOptions } from 'stream';
 
 export const logger: LoggerInstance = new Logger({
-	level: 'debug',
+	level: 'info',
 	transports: [
 		new transports.Console({
 			showLevel: false
