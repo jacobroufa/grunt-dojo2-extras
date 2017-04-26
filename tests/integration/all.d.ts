@@ -1,1 +1,2 @@
+import './git';
 import './typedoc';

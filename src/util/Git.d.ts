@@ -6,6 +6,7 @@ export default class Git {
     url?: string;
     constructor(cloneDirectory?: string, keyFile?: string);
     add(...params: string[]): Promise<any>;
+    assert(url: string): Promise<void>;
     checkout(version: string): Promise<ChildProcess>;
     clone(url: string): Promise<void>;
     commit(message: string): Promise<any>;

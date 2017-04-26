@@ -68,12 +68,31 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
                 });
             });
         };
+        Git.prototype.assert = function (url) {
+            return __awaiter(this, void 0, void 0, function () {
+                var repoUrl;
+                return __generator(this, function (_a) {
+                    switch (_a.label) {
+                        case 0:
+                            if (!this.isInitialized()) {
+                                throw new Error("Repository is not initialized at \"" + this.cloneDirectory + "\"");
+                            }
+                            return [4 /*yield*/, this.getConfig('remote.origin.url')];
+                        case 1:
+                            repoUrl = _a.sent();
+                            if (repoUrl !== url) {
+                                throw new Error("Repository mismatch. Expected \"" + repoUrl + "\" to be \"" + url + "\".");
+                            }
+                            return [2 /*return*/];
+                    }
+                });
+            });
+        };
         Git.prototype.checkout = function (version) {
             return process_1.promiseExec("git checkout " + version, { silent: false, cwd: this.cloneDirectory });
         };
         Git.prototype.clone = function (url) {
             return __awaiter(this, void 0, void 0, function () {
-                var repoUrl;
                 return __generator(this, function (_a) {
                     switch (_a.label) {
                         case 0:
@@ -81,14 +100,11 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
                                 throw new Error('A clone directory must be set');
                             }
                             log_1.logger.info("Cloning " + url + " to " + this.cloneDirectory);
-                            if (!fs_1.existsSync(this.cloneDirectory)) return [3 /*break*/, 2];
+                            if (!this.isInitialized()) return [3 /*break*/, 2];
                             log_1.logger.info("Repository exists at " + this.cloneDirectory);
-                            return [4 /*yield*/, this.getConfig('remote.origin.url')];
+                            return [4 /*yield*/, this.assert(url)];
                         case 1:
-                            repoUrl = _a.sent();
-                            if (repoUrl !== url) {
-                                throw new Error("Repository mismatch. Expected \"" + repoUrl + "\" to be \"" + url + "\".");
-                            }
+                            _a.sent();
                             _a.label = 2;
                         case 2: return [4 /*yield*/, this.execSSHAgent('git', ['clone', url, this.cloneDirectory], { silent: false })];
                         case 3:
