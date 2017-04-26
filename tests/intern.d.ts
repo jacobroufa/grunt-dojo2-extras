@@ -3,10 +3,10 @@ export declare const loaderOptions: {
     packages: ({
         name: string;
         location: string;
-        main: string;
     } | {
         name: string;
         location: string;
+        main: string;
     })[];
 };
 export declare const suites: string[];

@@ -98,18 +98,6 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (name === void 0) { name = ''; }
         return fs_1.mkdtempSync(path_1.join('.sync', name));
     }
-    function createTypedocOptions(options, target, source) {
-        var typedocOptions = Object.assign({}, options.typedoc, {
-            source: source
-        });
-        if (options.format === 'json') {
-            typedocOptions.json = target;
-        }
-        else {
-            typedocOptions.out = target;
-        }
-        return typedocOptions;
-    }
     return function (grunt) {
         function typedocTask() {
             return __awaiter(this, void 0, void 0, function () {
@@ -162,7 +150,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
                         case 4:
                             _a.sent();
                             _a.label = 5;
-                        case 5: return [4 /*yield*/, typedoc_1.default(createTypedocOptions(options, target, cloneDirectory))];
+                        case 5: return [4 /*yield*/, typedoc_1.default(cloneDirectory, target, options.typedoc)];
                         case 6:
                             _a.sent();
                             _a.label = 7;
@@ -176,7 +164,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
                         case 10:
                             _a.sent();
                             _a.label = 11;
-                        case 11: return [4 /*yield*/, typedoc_1.default(createTypedocOptions(options, dest, src))];
+                        case 11: return [4 /*yield*/, typedoc_1.default(path_1.resolve(src), dest, options.typedoc)];
                         case 12:
                             _a.sent();
                             _a.label = 13;

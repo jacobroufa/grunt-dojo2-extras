@@ -1,0 +1,1 @@
+{"version":3,"file":"intern-integration.js","sourceRoot":"","sources":["../../tests/intern-integration.ts"],"names":[],"mappings":";;;;;;;;;;;;;;IAAA,8BAAyB;IAEZ,QAAA,MAAM,GAAG,CAAE,uBAAuB,CAAE,CAAC","sourcesContent":["export * from './intern';\n\nexport const suites = [ 'tests/integration/all' ];\n"]}
