@@ -1,6 +1,6 @@
 import { promiseExec, promiseSpawn, exec } from './process';
 import { existsSync, chmodSync } from 'fs';
-import { relative } from 'path';
+import { join, relative } from 'path';
 import { ChildProcess } from 'child_process';
 import { toString } from './streams';
 import { logger } from '../log';
@@ -111,6 +111,16 @@ export default class Git {
 	async headRevision() {
 		const proc = await exec(`git rev-parse HEAD`, { silent: false, cwd: this.cloneDirectory });
 		return (await toString(proc.stdout)).trim();
+	}
+
+	/**
+	 * If the current cloneDirectory is a git repository
+	 */
+	isInitialized() {
+		if (!this.cloneDirectory) {
+			throw new Error('A clone directory must be set');
+		}
+		return existsSync(this.cloneDirectory) && existsSync(join(this.cloneDirectory, '.git'));
 	}
 
 	pull(remote?: string, branch?: string) {

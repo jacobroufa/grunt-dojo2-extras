@@ -1,6 +1,5 @@
 import Git from '../util/Git';
 import { logger } from '../log';
-import { existsSync } from 'fs';
 
 export interface Options {
 	branch: string;
@@ -23,7 +22,7 @@ export default async function sync(options: Options) {
 
 	logger.info(`Syncing ${ url } to ${ cloneDirectory }`);
 	await git.ensureConfig(options.username, options.useremail);
-	if (existsSync(cloneDirectory)) {
+	if (git.isInitialized()) {
 		logger.info(`Using existing repository at ${ cloneDirectory }`);
 		await assertUrl(url, git);
 	}
