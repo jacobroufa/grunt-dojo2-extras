@@ -1,10 +1,8 @@
-import request from '@dojo/core/request';
+import request, { responseHandler } from './request';
 import { hasGitCredentials } from './environment';
 import { readFileSync } from 'fs';
 import { Response } from '@dojo/core/request';
 import { RequestOptions } from '@dojo/core/request/interfaces';
-import { toString } from './streams';
-import { NodeResponse } from '@dojo/core/request/providers/node';
 
 export interface Release {
 	name: string;
@@ -24,18 +22,6 @@ export interface Options {
 export interface AuthResponse {
 	id: number;
 	token: string;
-}
-
-function responseHandler(response: NodeResponse): Response | Promise<Response> {
-	const statusCode = response.status;
-	if (statusCode < 200 || statusCode >= 300) {
-		const message = response.statusText;
-		return <never> toString(response.nativeResponse)
-			.then(function (body) {
-				throw new Error(`Github responded with ${ statusCode }. ${ message }. ${ body }`);
-			});
-	}
-	return response;
 }
 
 export default class GitHub {
@@ -75,7 +61,7 @@ export default class GitHub {
 				note
 			}),
 			password: this.password,
-			user: this.username,
+			user: this.username
 		};
 		return request.post(endpoint, options)
 			.then(responseHandler)
