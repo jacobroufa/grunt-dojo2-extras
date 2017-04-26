@@ -85,7 +85,6 @@
 								<li class="tsd-kind-interface"><a href="interfaces/execoptions.html" class="tsd-kind-icon">Exec<wbr>Options</a></li>
 								<li class="tsd-kind-interface"><a href="interfaces/fetchrepositoryresponse.html" class="tsd-kind-icon">Fetch<wbr>Repository<wbr>Response</a></li>
 								<li class="tsd-kind-interface"><a href="interfaces/htmloptions.html" class="tsd-kind-icon">Html<wbr>Options</a></li>
-								<li class="tsd-kind-interface"><a href="interfaces/jsonoptions.html" class="tsd-kind-icon">Json<wbr>Options</a></li>
 								<li class="tsd-kind-interface"><a href="interfaces/keypairfiles.html" class="tsd-kind-icon">Key<wbr>Pair<wbr>Files</a></li>
 								<li class="tsd-kind-interface"><a href="interfaces/listenvironmentvariablesresponse.html" class="tsd-kind-icon">List<wbr>Environment<wbr>Variables<wbr>Response</a></li>
 								<li class="tsd-kind-interface"><a href="interfaces/options.html" class="tsd-kind-icon">Options</a></li>
@@ -106,13 +105,17 @@
 						<section class="tsd-index-section ">
 							<h3>Variables</h3>
 							<ul class="tsd-index-list">
+								<li class="tsd-kind-variable"><a href="globals.html#excludeinstrumentation" class="tsd-kind-icon">exclude<wbr>Instrumentation</a></li>
+								<li class="tsd-kind-variable"><a href="globals.html#filtererrorstack" class="tsd-kind-icon">filter<wbr>Error<wbr>Stack</a></li>
 								<li class="tsd-kind-variable"><a href="globals.html#logger" class="tsd-kind-icon">logger</a></li>
+								<li class="tsd-kind-variable"><a href="globals.html#suites" class="tsd-kind-icon">suites</a></li>
 							</ul>
 						</section>
 						<section class="tsd-index-section ">
 							<h3>Functions</h3>
 							<ul class="tsd-index-list">
 								<li class="tsd-kind-function"><a href="globals.html#asserturl" class="tsd-kind-icon">assert<wbr>Url</a></li>
+								<li class="tsd-kind-function"><a href="globals.html#cleanupmodulemocks" class="tsd-kind-icon">cleanup<wbr>Module<wbr>Mocks</a></li>
 								<li class="tsd-kind-function"><a href="globals.html#commitmessage" class="tsd-kind-icon">commit<wbr>Message</a></li>
 								<li class="tsd-kind-function"><a href="globals.html#createdeploykey" class="tsd-kind-icon">create<wbr>Deploy<wbr>Key</a></li>
 								<li class="tsd-kind-function"><a href="globals.html#createhtmlapimissingfilter" class="tsd-kind-icon">create<wbr>Html<wbr>Api<wbr>Missing<wbr>Filter</a></li>
@@ -140,6 +143,7 @@
 								<li class="tsd-kind-function"><a href="globals.html#isrunningontravis" class="tsd-kind-icon">is<wbr>Running<wbr>OnTravis</a></li>
 								<li class="tsd-kind-function"><a href="globals.html#keyfile" class="tsd-kind-icon">key<wbr>File</a></li>
 								<li class="tsd-kind-function"><a href="globals.html#latestfilter" class="tsd-kind-icon">latest<wbr>Filter</a></li>
+								<li class="tsd-kind-function tsd-has-type-parameter"><a href="globals.html#loadmodule" class="tsd-kind-icon">load<wbr>Module</a></li>
 								<li class="tsd-kind-function"><a href="globals.html#promiseexec" class="tsd-kind-icon">promise<wbr>Exec</a></li>
 								<li class="tsd-kind-function"><a href="globals.html#promisespawn" class="tsd-kind-icon">promise<wbr>Spawn</a></li>
 								<li class="tsd-kind-function"><a href="globals.html#promisify" class="tsd-kind-icon">promisify</a></li>
@@ -149,9 +153,18 @@
 								<li class="tsd-kind-function"><a href="globals.html#setupautomation" class="tsd-kind-icon">setup<wbr>Automation</a></li>
 								<li class="tsd-kind-function"><a href="globals.html#spawn" class="tsd-kind-icon">spawn</a></li>
 								<li class="tsd-kind-function"><a href="globals.html#sync" class="tsd-kind-icon">sync</a></li>
+								<li class="tsd-kind-function"><a href="globals.html#tmpdirectory" class="tsd-kind-icon">tmp<wbr>Directory</a></li>
+								<li class="tsd-kind-function"><a href="globals.html#tmpfile" class="tsd-kind-icon">tmp<wbr>File</a></li>
 								<li class="tsd-kind-function"><a href="globals.html#tostring" class="tsd-kind-icon">to<wbr>String</a></li>
 								<li class="tsd-kind-function"><a href="globals.html#typedoc" class="tsd-kind-icon">typedoc</a></li>
 								<li class="tsd-kind-function tsd-has-type-parameter"><a href="globals.html#wrapasynctask" class="tsd-kind-icon">wrap<wbr>Async<wbr>Task</a></li>
+							</ul>
+						</section>
+						<section class="tsd-index-section ">
+							<h3>Object literals</h3>
+							<ul class="tsd-index-list">
+								<li class="tsd-kind-object-literal"><a href="globals.html#loaderoptions" class="tsd-kind-icon">loader<wbr>Options</a></li>
+								<li class="tsd-kind-object-literal"><a href="globals.html#loaders" class="tsd-kind-icon">loaders</a></li>
 							</ul>
 						</section>
 					</div>
@@ -165,7 +178,7 @@
 					<div class="tsd-signature tsd-kind-icon">Publish<wbr>Mode<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">"publish"</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">"commit"</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">"skip"</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/dojo/grunt-extras/blob/01bdb71/src/commands/publish.ts#L5">src/commands/publish.ts:5</a></li>
+							<li>Defined in <a href="https://github.com/dojo/grunt-extras/blob/0c25859/src/commands/publish.ts#L5">src/commands/publish.ts:5</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -173,12 +186,43 @@
 			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Variables</h2>
 				<section class="tsd-panel tsd-member tsd-kind-variable">
+					<a name="excludeinstrumentation" class="tsd-anchor"></a>
+					<h3>exclude<wbr>Instrumentation</h3>
+					<div class="tsd-signature tsd-kind-icon">exclude<wbr>Instrumentation<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">RegExp</span><span class="tsd-signature-symbol"> =&nbsp;/^(?:_build\/tests|node_modules)\//</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/dojo/grunt-extras/blob/0c25859/tests/intern.ts#L15">tests/intern.ts:15</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-variable">
+					<a name="filtererrorstack" class="tsd-anchor"></a>
+					<h3>filter<wbr>Error<wbr>Stack</h3>
+					<div class="tsd-signature tsd-kind-icon">filter<wbr>Error<wbr>Stack<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">true</span><span class="tsd-signature-symbol"> =&nbsp;true</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/dojo/grunt-extras/blob/0c25859/tests/intern.ts#L21">tests/intern.ts:21</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-variable">
 					<a name="logger" class="tsd-anchor"></a>
 					<h3>logger</h3>
 					<div class="tsd-signature tsd-kind-icon">logger<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">LoggerInstance</span><span class="tsd-signature-symbol"> =&nbsp;new Logger({level: &#x27;info&#x27;,transports: [new transports.Console({showLevel: false})]})</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/dojo/grunt-extras/blob/01bdb71/src/log.ts#L4">src/log.ts:4</a></li>
+							<li>Defined in <a href="https://github.com/dojo/grunt-extras/blob/0c25859/src/log.ts#L4">src/log.ts:4</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-variable">
+					<a name="suites" class="tsd-anchor"></a>
+					<h3>suites</h3>
+					<div class="tsd-signature tsd-kind-icon">suites<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">Array</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol"> =&nbsp;[ &#x27;tests/integration/all&#x27; ]</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/dojo/grunt-extras/blob/0c25859/tests/intern.ts#L13">tests/intern.ts:13</a></li>
+							<li>Defined in <a href="https://github.com/dojo/grunt-extras/blob/0c25859/tests/intern-integration.ts#L3">tests/intern-integration.ts:3</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -195,7 +239,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/dojo/grunt-extras/blob/01bdb71/src/commands/sync.ts#L13">src/commands/sync.ts:13</a></li>
+									<li>Defined in <a href="https://github.com/dojo/grunt-extras/blob/0c25859/src/commands/sync.ts#L13">src/commands/sync.ts:13</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -212,6 +256,23 @@
 					</ul>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-function">
+					<a name="cleanupmodulemocks" class="tsd-anchor"></a>
+					<h3>cleanup<wbr>Module<wbr>Mocks</h3>
+					<ul class="tsd-signatures tsd-kind-function">
+						<li class="tsd-signature tsd-kind-icon">cleanup<wbr>Module<wbr>Mocks<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/dojo/grunt-extras/blob/0c25859/tests/_support/loadModule.ts#L22">tests/_support/loadModule.ts:22</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function">
 					<a name="commitmessage" class="tsd-anchor"></a>
 					<h3>commit<wbr>Message</h3>
 					<ul class="tsd-signatures tsd-kind-function">
@@ -221,7 +282,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/dojo/grunt-extras/blob/01bdb71/src/util/environment.ts#L4">src/util/environment.ts:4</a></li>
+									<li>Defined in <a href="https://github.com/dojo/grunt-extras/blob/0c25859/src/util/environment.ts#L4">src/util/environment.ts:4</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">string</span></h4>
@@ -238,7 +299,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/dojo/grunt-extras/blob/01bdb71/src/util/crypto.ts#L22">src/util/crypto.ts:22</a></li>
+									<li>Defined in <a href="https://github.com/dojo/grunt-extras/blob/0c25859/src/util/crypto.ts#L22">src/util/crypto.ts:22</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -264,7 +325,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/dojo/grunt-extras/blob/01bdb71/src/commands/getReleases.ts#L29">src/commands/getReleases.ts:29</a></li>
+									<li>Defined in <a href="https://github.com/dojo/grunt-extras/blob/0c25859/src/commands/getReleases.ts#L29">src/commands/getReleases.ts:29</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -299,7 +360,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/dojo/grunt-extras/blob/01bdb71/src/commands/getReleases.ts#L40">src/commands/getReleases.ts:40</a></li>
+									<li>Defined in <a href="https://github.com/dojo/grunt-extras/blob/0c25859/src/commands/getReleases.ts#L40">src/commands/getReleases.ts:40</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -334,7 +395,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/dojo/grunt-extras/blob/01bdb71/src/commands/getReleases.ts#L59">src/commands/getReleases.ts:59</a></li>
+									<li>Defined in <a href="https://github.com/dojo/grunt-extras/blob/0c25859/src/commands/getReleases.ts#L59">src/commands/getReleases.ts:59</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -363,7 +424,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/dojo/grunt-extras/blob/01bdb71/src/util/environment.ts#L10">src/util/environment.ts:10</a></li>
+									<li>Defined in <a href="https://github.com/dojo/grunt-extras/blob/0c25859/src/util/environment.ts#L10">src/util/environment.ts:10</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -383,7 +444,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/dojo/grunt-extras/blob/01bdb71/src/util/crypto.ts#L32">src/util/crypto.ts:32</a></li>
+									<li>Defined in <a href="https://github.com/dojo/grunt-extras/blob/0c25859/src/util/crypto.ts#L32">src/util/crypto.ts:32</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -412,7 +473,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/dojo/grunt-extras/blob/01bdb71/src/commands/decryptDeployKey.ts#L10">src/commands/decryptDeployKey.ts:10</a></li>
+									<li>Defined in <a href="https://github.com/dojo/grunt-extras/blob/0c25859/src/commands/decryptDeployKey.ts#L10">src/commands/decryptDeployKey.ts:10</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -450,7 +511,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/dojo/grunt-extras/blob/01bdb71/src/util/environment.ts#L17">src/util/environment.ts:17</a></li>
+									<li>Defined in <a href="https://github.com/dojo/grunt-extras/blob/0c25859/src/util/environment.ts#L17">src/util/environment.ts:17</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -470,7 +531,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/dojo/grunt-extras/blob/01bdb71/src/util/environment.ts#L24">src/util/environment.ts:24</a></li>
+									<li>Defined in <a href="https://github.com/dojo/grunt-extras/blob/0c25859/src/util/environment.ts#L24">src/util/environment.ts:24</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -490,7 +551,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/dojo/grunt-extras/blob/01bdb71/src/util/crypto.ts#L37">src/util/crypto.ts:37</a></li>
+									<li>Defined in <a href="https://github.com/dojo/grunt-extras/blob/0c25859/src/util/crypto.ts#L37">src/util/crypto.ts:37</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -519,7 +580,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/dojo/grunt-extras/blob/01bdb71/src/util/environment.ts#L31">src/util/environment.ts:31</a></li>
+									<li>Defined in <a href="https://github.com/dojo/grunt-extras/blob/0c25859/src/util/environment.ts#L31">src/util/environment.ts:31</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -545,7 +606,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/dojo/grunt-extras/blob/01bdb71/src/util/streams.ts#L28">src/util/streams.ts:28</a></li>
+									<li>Defined in <a href="https://github.com/dojo/grunt-extras/blob/0c25859/src/util/streams.ts#L28">src/util/streams.ts:28</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -571,7 +632,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/dojo/grunt-extras/blob/01bdb71/src/util/process.ts#L39">src/util/process.ts:39</a></li>
+									<li>Defined in <a href="https://github.com/dojo/grunt-extras/blob/0c25859/src/util/process.ts#L39">src/util/process.ts:39</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -597,7 +658,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/dojo/grunt-extras/blob/01bdb71/tasks/util/getGithubSlug.ts#L16">tasks/util/getGithubSlug.ts:16</a></li>
+									<li>Defined in <a href="https://github.com/dojo/grunt-extras/blob/0c25859/tasks/util/getGithubSlug.ts#L16">tasks/util/getGithubSlug.ts:16</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -628,7 +689,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/dojo/grunt-extras/blob/01bdb71/src/commands/getReleases.ts#L13">src/commands/getReleases.ts:13</a></li>
+									<li>Defined in <a href="https://github.com/dojo/grunt-extras/blob/0c25859/src/commands/getReleases.ts#L13">src/commands/getReleases.ts:13</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -662,7 +723,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/dojo/grunt-extras/blob/01bdb71/src/commands/getReleases.ts#L20">src/commands/getReleases.ts:20</a></li>
+									<li>Defined in <a href="https://github.com/dojo/grunt-extras/blob/0c25859/src/commands/getReleases.ts#L20">src/commands/getReleases.ts:20</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -696,7 +757,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/dojo/grunt-extras/blob/01bdb71/src/commands/getReleases.ts#L72">src/commands/getReleases.ts:72</a></li>
+									<li>Defined in <a href="https://github.com/dojo/grunt-extras/blob/0c25859/src/commands/getReleases.ts#L72">src/commands/getReleases.ts:72</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -734,7 +795,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/dojo/grunt-extras/blob/01bdb71/src/util/environment.ts#L38">src/util/environment.ts:38</a></li>
+									<li>Defined in <a href="https://github.com/dojo/grunt-extras/blob/0c25859/src/util/environment.ts#L38">src/util/environment.ts:38</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -754,7 +815,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/dojo/grunt-extras/blob/01bdb71/src/util/environment.ts#L46">src/util/environment.ts:46</a></li>
+									<li>Defined in <a href="https://github.com/dojo/grunt-extras/blob/0c25859/src/util/environment.ts#L46">src/util/environment.ts:46</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -783,7 +844,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/dojo/grunt-extras/blob/01bdb71/src/util/environment.ts#L69">src/util/environment.ts:69</a></li>
+									<li>Defined in <a href="https://github.com/dojo/grunt-extras/blob/0c25859/src/util/environment.ts#L69">src/util/environment.ts:69</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -812,7 +873,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/dojo/grunt-extras/blob/01bdb71/src/util/environment.ts#L61">src/util/environment.ts:61</a></li>
+									<li>Defined in <a href="https://github.com/dojo/grunt-extras/blob/0c25859/src/util/environment.ts#L61">src/util/environment.ts:61</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">any</span></h4>
@@ -829,7 +890,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/dojo/grunt-extras/blob/01bdb71/src/commands/installDependencies.ts#L6">src/commands/installDependencies.ts:6</a></li>
+									<li>Defined in <a href="https://github.com/dojo/grunt-extras/blob/0c25859/src/commands/installDependencies.ts#L6">src/commands/installDependencies.ts:6</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -852,7 +913,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/dojo/grunt-extras/blob/01bdb71/src/util/environment.ts#L76">src/util/environment.ts:76</a></li>
+									<li>Defined in <a href="https://github.com/dojo/grunt-extras/blob/0c25859/src/util/environment.ts#L76">src/util/environment.ts:76</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -872,7 +933,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/dojo/grunt-extras/blob/01bdb71/src/util/environment.ts#L83">src/util/environment.ts:83</a></li>
+									<li>Defined in <a href="https://github.com/dojo/grunt-extras/blob/0c25859/src/util/environment.ts#L83">src/util/environment.ts:83</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -892,7 +953,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/dojo/grunt-extras/blob/01bdb71/src/util/environment.ts#L90">src/util/environment.ts:90</a></li>
+									<li>Defined in <a href="https://github.com/dojo/grunt-extras/blob/0c25859/src/util/environment.ts#L90">src/util/environment.ts:90</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -912,7 +973,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/dojo/grunt-extras/blob/01bdb71/src/commands/getReleases.ts#L51">src/commands/getReleases.ts:51</a></li>
+									<li>Defined in <a href="https://github.com/dojo/grunt-extras/blob/0c25859/src/commands/getReleases.ts#L51">src/commands/getReleases.ts:51</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -940,6 +1001,41 @@
 						</li>
 					</ul>
 				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function tsd-has-type-parameter">
+					<a name="loadmodule" class="tsd-anchor"></a>
+					<h3>load<wbr>Module</h3>
+					<ul class="tsd-signatures tsd-kind-function tsd-has-type-parameter">
+						<li class="tsd-signature tsd-kind-icon">load<wbr>Module&lt;T&gt;<span class="tsd-signature-symbol">(</span>mid<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, mocks<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span>, returnDefault<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">T</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/dojo/grunt-extras/blob/0c25859/tests/_support/loadModule.ts#L6">tests/_support/loadModule.ts:6</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-type-parameters-title">Type parameters</h4>
+							<ul class="tsd-type-parameters">
+								<li>
+									<h4>T</h4>
+								</li>
+							</ul>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>mid: <span class="tsd-signature-type">string</span></h5>
+								</li>
+								<li>
+									<h5>mocks: <span class="tsd-signature-type">any</span></h5>
+								</li>
+								<li>
+									<h5><span class="tsd-flag ts-flagDefault value">Default value</span> returnDefault: <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol"> =&nbsp;true</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">T</span></h4>
+						</li>
+					</ul>
+				</section>
 				<section class="tsd-panel tsd-member tsd-kind-function">
 					<a name="promiseexec" class="tsd-anchor"></a>
 					<h3>promise<wbr>Exec</h3>
@@ -950,7 +1046,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/dojo/grunt-extras/blob/01bdb71/src/util/process.ts#L46">src/util/process.ts:46</a></li>
+									<li>Defined in <a href="https://github.com/dojo/grunt-extras/blob/0c25859/src/util/process.ts#L46">src/util/process.ts:46</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -976,7 +1072,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/dojo/grunt-extras/blob/01bdb71/src/util/process.ts#L62">src/util/process.ts:62</a></li>
+									<li>Defined in <a href="https://github.com/dojo/grunt-extras/blob/0c25859/src/util/process.ts#L62">src/util/process.ts:62</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -1005,7 +1101,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/dojo/grunt-extras/blob/01bdb71/src/util/process.ts#L10">src/util/process.ts:10</a></li>
+									<li>Defined in <a href="https://github.com/dojo/grunt-extras/blob/0c25859/src/util/process.ts#L10">src/util/process.ts:10</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -1028,7 +1124,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/dojo/grunt-extras/blob/01bdb71/src/commands/publish.ts#L27">src/commands/publish.ts:27</a></li>
+									<li>Defined in <a href="https://github.com/dojo/grunt-extras/blob/0c25859/src/commands/publish.ts#L27">src/commands/publish.ts:27</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -1051,7 +1147,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/dojo/grunt-extras/blob/01bdb71/src/util/environment.ts#L97">src/util/environment.ts:97</a></li>
+									<li>Defined in <a href="https://github.com/dojo/grunt-extras/blob/0c25859/src/util/environment.ts#L97">src/util/environment.ts:97</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -1077,7 +1173,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/dojo/grunt-extras/blob/01bdb71/src/util/environment.ts#L104">src/util/environment.ts:104</a></li>
+									<li>Defined in <a href="https://github.com/dojo/grunt-extras/blob/0c25859/src/util/environment.ts#L104">src/util/environment.ts:104</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -1097,7 +1193,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/dojo/grunt-extras/blob/01bdb71/src/commands/initAutomation.ts#L9">src/commands/initAutomation.ts:9</a></li>
+									<li>Defined in <a href="https://github.com/dojo/grunt-extras/blob/0c25859/src/commands/initAutomation.ts#L9">src/commands/initAutomation.ts:9</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -1126,7 +1222,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/dojo/grunt-extras/blob/01bdb71/src/util/process.ts#L55">src/util/process.ts:55</a></li>
+									<li>Defined in <a href="https://github.com/dojo/grunt-extras/blob/0c25859/src/util/process.ts#L55">src/util/process.ts:55</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -1155,7 +1251,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/dojo/grunt-extras/blob/01bdb71/src/commands/sync.ts#L20">src/commands/sync.ts:20</a></li>
+									<li>Defined in <a href="https://github.com/dojo/grunt-extras/blob/0c25859/src/commands/sync.ts#L20">src/commands/sync.ts:20</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -1169,6 +1265,46 @@
 					</ul>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-function">
+					<a name="tmpdirectory" class="tsd-anchor"></a>
+					<h3>tmp<wbr>Directory</h3>
+					<ul class="tsd-signatures tsd-kind-function">
+						<li class="tsd-signature tsd-kind-icon">tmp<wbr>Directory<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/dojo/grunt-extras/blob/0c25859/tests/_support/tmpFiles.ts#L4">tests/_support/tmpFiles.ts:4</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">string</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function">
+					<a name="tmpfile" class="tsd-anchor"></a>
+					<h3>tmp<wbr>File</h3>
+					<ul class="tsd-signatures tsd-kind-function">
+						<li class="tsd-signature tsd-kind-icon">tmp<wbr>File<span class="tsd-signature-symbol">(</span>name<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/dojo/grunt-extras/blob/0c25859/tests/_support/tmpFiles.ts#L11">tests/_support/tmpFiles.ts:11</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5><span class="tsd-flag ts-flagDefault value">Default value</span> name: <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> =&nbsp;String(Math.floor(Math.random() * 10000))</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">string</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function">
 					<a name="tostring" class="tsd-anchor"></a>
 					<h3>to<wbr>String</h3>
 					<ul class="tsd-signatures tsd-kind-function">
@@ -1178,7 +1314,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/dojo/grunt-extras/blob/01bdb71/src/util/streams.ts#L8">src/util/streams.ts:8</a></li>
+									<li>Defined in <a href="https://github.com/dojo/grunt-extras/blob/0c25859/src/util/streams.ts#L8">src/util/streams.ts:8</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -1195,19 +1331,25 @@
 					<a name="typedoc" class="tsd-anchor"></a>
 					<h3>typedoc</h3>
 					<ul class="tsd-signatures tsd-kind-function">
-						<li class="tsd-signature tsd-kind-icon">typedoc<span class="tsd-signature-symbol">(</span>options<span class="tsd-signature-symbol">: </span><a href="interfaces/options.html" class="tsd-signature-type">Options</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></li>
+						<li class="tsd-signature tsd-kind-icon">typedoc<span class="tsd-signature-symbol">(</span>source<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, target<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, options<span class="tsd-signature-symbol">?: </span><a href="interfaces/baseoptions.html" class="tsd-signature-type">BaseOptions</a><span class="tsd-signature-symbol"> | </span><a href="interfaces/htmloptions.html" class="tsd-signature-type">HtmlOptions</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/dojo/grunt-extras/blob/01bdb71/src/commands/typedoc.ts#L63">src/commands/typedoc.ts:63</a></li>
+									<li>Defined in <a href="https://github.com/dojo/grunt-extras/blob/0c25859/src/commands/typedoc.ts#L78">src/commands/typedoc.ts:78</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
-									<h5>options: <a href="interfaces/options.html" class="tsd-signature-type">Options</a></h5>
+									<h5>source: <span class="tsd-signature-type">string</span></h5>
+								</li>
+								<li>
+									<h5>target: <span class="tsd-signature-type">string</span></h5>
+								</li>
+								<li>
+									<h5><span class="tsd-flag ts-flagDefault value">Default value</span> options: <a href="interfaces/baseoptions.html" class="tsd-signature-type">BaseOptions</a><span class="tsd-signature-symbol"> | </span><a href="interfaces/htmloptions.html" class="tsd-signature-type">HtmlOptions</a><span class="tsd-signature-symbol"> =&nbsp;{}</span></h5>
 								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4>
@@ -1224,7 +1366,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/dojo/grunt-extras/blob/01bdb71/tasks/util/wrapAsyncTask.ts#L4">tasks/util/wrapAsyncTask.ts:4</a></li>
+									<li>Defined in <a href="https://github.com/dojo/grunt-extras/blob/0c25859/tasks/util/wrapAsyncTask.ts#L4">tasks/util/wrapAsyncTask.ts:4</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-type-parameters-title">Type parameters</h4>
@@ -1260,6 +1402,49 @@
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">(Anonymous function)</span></h4>
 						</li>
 					</ul>
+				</section>
+			</section>
+			<section class="tsd-panel-group tsd-member-group ">
+				<h2>Object literals</h2>
+				<section class="tsd-panel tsd-member tsd-kind-object-literal">
+					<a name="loaderoptions" class="tsd-anchor"></a>
+					<h3>loader<wbr>Options</h3>
+					<div class="tsd-signature tsd-kind-icon">loader<wbr>Options<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">object</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/dojo/grunt-extras/blob/0c25859/tests/intern.ts#L3">tests/intern.ts:3</a></li>
+						</ul>
+					</aside>
+					<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
+						<a name="loaderoptions.packages" class="tsd-anchor"></a>
+						<h3>packages</h3>
+						<div class="tsd-signature tsd-kind-icon">packages<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">Array</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">object</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">object</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol"> =&nbsp;[{ name: &#x27;assets&#x27;, location: &#x27;assets&#x27; },{ name: &#x27;tslib&#x27;, location: &#x27;./node_modules/tslib&#x27;, main: &#x27;tslib.js&#x27; },{ name: &#x27;tasks&#x27;, location: &#x27;./_build/tasks&#x27; },{ name: &#x27;src&#x27;, location: &#x27;./_build/src&#x27; },{ name: &#x27;tests&#x27;, location: &#x27;./_build/tests&#x27; }]</span></div>
+						<aside class="tsd-sources">
+							<ul>
+								<li>Defined in <a href="https://github.com/dojo/grunt-extras/blob/0c25859/tests/intern.ts#L4">tests/intern.ts:4</a></li>
+							</ul>
+						</aside>
+					</section>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-object-literal">
+					<a name="loaders" class="tsd-anchor"></a>
+					<h3>loaders</h3>
+					<div class="tsd-signature tsd-kind-icon">loaders<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">object</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/dojo/grunt-extras/blob/0c25859/tests/intern.ts#L17">tests/intern.ts:17</a></li>
+						</ul>
+					</aside>
+					<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
+						<a name="loaders.host_node" class="tsd-anchor"></a>
+						<h3>host-<wbr>node</h3>
+						<div class="tsd-signature tsd-kind-icon">host-<wbr>node<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> =&nbsp;&quot;@dojo/loader&quot;</span></div>
+						<aside class="tsd-sources">
+							<ul>
+								<li>Defined in <a href="https://github.com/dojo/grunt-extras/blob/0c25859/tests/intern.ts#L18">tests/intern.ts:18</a></li>
+							</ul>
+						</aside>
+					</section>
 				</section>
 			</section>
 		</div>
@@ -1316,9 +1501,6 @@
 						<a href="interfaces/htmloptions.html" class="tsd-kind-icon">Html<wbr>Options</a>
 					</li>
 					<li class=" tsd-kind-interface">
-						<a href="interfaces/jsonoptions.html" class="tsd-kind-icon">Json<wbr>Options</a>
-					</li>
-					<li class=" tsd-kind-interface">
 						<a href="interfaces/keypairfiles.html" class="tsd-kind-icon">Key<wbr>Pair<wbr>Files</a>
 					</li>
 					<li class=" tsd-kind-interface">
@@ -1349,10 +1531,22 @@
 						<a href="globals.html#publishmode" class="tsd-kind-icon">Publish<wbr>Mode</a>
 					</li>
 					<li class=" tsd-kind-variable">
+						<a href="globals.html#excludeinstrumentation" class="tsd-kind-icon">exclude<wbr>Instrumentation</a>
+					</li>
+					<li class=" tsd-kind-variable">
+						<a href="globals.html#filtererrorstack" class="tsd-kind-icon">filter<wbr>Error<wbr>Stack</a>
+					</li>
+					<li class=" tsd-kind-variable">
 						<a href="globals.html#logger" class="tsd-kind-icon">logger</a>
+					</li>
+					<li class=" tsd-kind-variable">
+						<a href="globals.html#suites" class="tsd-kind-icon">suites</a>
 					</li>
 					<li class=" tsd-kind-function">
 						<a href="globals.html#asserturl" class="tsd-kind-icon">assert<wbr>Url</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="globals.html#cleanupmodulemocks" class="tsd-kind-icon">cleanup<wbr>Module<wbr>Mocks</a>
 					</li>
 					<li class=" tsd-kind-function">
 						<a href="globals.html#commitmessage" class="tsd-kind-icon">commit<wbr>Message</a>
@@ -1435,6 +1629,9 @@
 					<li class=" tsd-kind-function">
 						<a href="globals.html#latestfilter" class="tsd-kind-icon">latest<wbr>Filter</a>
 					</li>
+					<li class=" tsd-kind-function tsd-has-type-parameter">
+						<a href="globals.html#loadmodule" class="tsd-kind-icon">load<wbr>Module</a>
+					</li>
 					<li class=" tsd-kind-function">
 						<a href="globals.html#promiseexec" class="tsd-kind-icon">promise<wbr>Exec</a>
 					</li>
@@ -1463,6 +1660,12 @@
 						<a href="globals.html#sync" class="tsd-kind-icon">sync</a>
 					</li>
 					<li class=" tsd-kind-function">
+						<a href="globals.html#tmpdirectory" class="tsd-kind-icon">tmp<wbr>Directory</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="globals.html#tmpfile" class="tsd-kind-icon">tmp<wbr>File</a>
+					</li>
+					<li class=" tsd-kind-function">
 						<a href="globals.html#tostring" class="tsd-kind-icon">to<wbr>String</a>
 					</li>
 					<li class=" tsd-kind-function">
@@ -1470,6 +1673,12 @@
 					</li>
 					<li class=" tsd-kind-function tsd-has-type-parameter">
 						<a href="globals.html#wrapasynctask" class="tsd-kind-icon">wrap<wbr>Async<wbr>Task</a>
+					</li>
+					<li class=" tsd-kind-object-literal">
+						<a href="globals.html#loaderoptions" class="tsd-kind-icon">loader<wbr>Options</a>
+					</li>
+					<li class=" tsd-kind-object-literal">
+						<a href="globals.html#loaders" class="tsd-kind-icon">loaders</a>
 					</li>
 				</ul>
 			</nav>
