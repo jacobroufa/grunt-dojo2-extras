@@ -1,8 +1,8 @@
-# grunt-extras
+# grunt-dojo2-extras
 
-[![Build Status](https://travis-ci.org/dojo/grunt-extras.svg?branch=master)](https://travis-ci.org/dojo/grunt-extras)
+[![Build Status](https://travis-ci.org/dojo/grunt-dojo2-extras.svg?branch=master)](https://travis-ci.org/dojo/grunt-dojo2-extras)
 
-grunt-extras provides tools in support of continuous deployment of projects, packages, and documentation.
+grunt-dojo2-extras provides tools in support of continuous deployment of projects, packages, and documentation.
 
 ## Grunt Tasks
 
