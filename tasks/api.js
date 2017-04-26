@@ -39,7 +39,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (v !== undefined) module.exports = v;
     }
     else if (typeof define === "function" && define.amd) {
-        define(["require", "exports", "../src/commands/typedoc", "./util/wrapAsyncTask", "../src/util/GitHub", "../src/commands/sync", "../src/commands/getReleases", "path", "fs", "../src/commands/installDependencies"], factory);
+        define(["require", "exports", "../src/commands/typedoc", "./util/wrapAsyncTask", "../src/util/GitHub", "../src/commands/sync", "../src/commands/getReleases", "path", "fs", "../src/commands/installDependencies", "../src/log"], factory);
     }
 })(function (require, exports) {
     "use strict";
@@ -51,6 +51,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     var path_1 = require("path");
     var fs_1 = require("fs");
     var installDependencies_1 = require("../src/commands/installDependencies");
+    var log_1 = require("../src/log");
     function isRemoteOptions(options) {
         return !!options.repo;
     }
@@ -112,7 +113,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     return function (grunt) {
         function typedocTask() {
             return __awaiter(this, void 0, void 0, function () {
-                var options, src, dest, format, repo, cloneDirectory, missing, pathTemplate, _i, missing_1, release, target, source;
+                var options, src, dest, format, repo, cloneDirectory, missing, pathTemplate, _i, missing_1, release, target;
                 return __generator(this, function (_a) {
                     switch (_a.label) {
                         case 0:
@@ -134,13 +135,21 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
                         case 1:
                             missing = _a.sent();
                             pathTemplate = format === 'json' ? getReleases_1.getJsonApiPath : getReleases_1.getHtmlApiPath;
+                            if (missing.length === 0) {
+                                if (options.filter) {
+                                    log_1.logger.info("No APIs match the filter: \"" + options.filter);
+                                }
+                                else {
+                                    log_1.logger.info("all APIs are up-to-date.");
+                                }
+                                return [2 /*return*/];
+                            }
                             _i = 0, missing_1 = missing;
                             _a.label = 2;
                         case 2:
                             if (!(_i < missing_1.length)) return [3 /*break*/, 8];
                             release = missing_1[_i];
                             target = pathTemplate(dest, repo.name, release.name);
-                            source = cloneDirectory;
                             return [4 /*yield*/, sync_1.default({
                                     branch: release.name,
                                     cloneDirectory: cloneDirectory,
@@ -149,11 +158,11 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
                         case 3:
                             _a.sent();
                             if (!(options.skipInstall !== true)) return [3 /*break*/, 5];
-                            return [4 /*yield*/, installDependencies_1.default(src)];
+                            return [4 /*yield*/, installDependencies_1.default(cloneDirectory)];
                         case 4:
                             _a.sent();
                             _a.label = 5;
-                        case 5: return [4 /*yield*/, typedoc_1.default(createTypedocOptions(options, target, source))];
+                        case 5: return [4 /*yield*/, typedoc_1.default(createTypedocOptions(options, target, cloneDirectory))];
                         case 6:
                             _a.sent();
                             _a.label = 7;
