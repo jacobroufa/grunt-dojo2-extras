@@ -224,6 +224,12 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
                 });
             });
         };
+        Git.prototype.isInitialized = function () {
+            if (!this.cloneDirectory) {
+                throw new Error('A clone directory must be set');
+            }
+            return fs_1.existsSync(this.cloneDirectory) && fs_1.existsSync(path_1.join(this.cloneDirectory, '.git'));
+        };
         Git.prototype.pull = function (remote, branch) {
             var command = ['pull'];
             if (remote || branch) {

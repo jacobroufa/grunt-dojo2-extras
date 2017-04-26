@@ -39,14 +39,13 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (v !== undefined) module.exports = v;
     }
     else if (typeof define === "function" && define.amd) {
-        define(["require", "exports", "../util/Git", "../log", "fs"], factory);
+        define(["require", "exports", "../util/Git", "../log"], factory);
     }
 })(function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var Git_1 = require("../util/Git");
     var log_1 = require("../log");
-    var fs_1 = require("fs");
     function assertUrl(url, git) {
         return __awaiter(this, void 0, void 0, function () {
             var remoteUrl;
@@ -76,7 +75,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
                         return [4 /*yield*/, git.ensureConfig(options.username, options.useremail)];
                     case 1:
                         _a.sent();
-                        if (!fs_1.existsSync(cloneDirectory)) return [3 /*break*/, 3];
+                        if (!git.isInitialized()) return [3 /*break*/, 3];
                         log_1.logger.info("Using existing repository at " + cloneDirectory);
                         return [4 /*yield*/, assertUrl(url, git)];
                     case 2:
