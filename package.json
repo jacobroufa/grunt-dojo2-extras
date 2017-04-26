@@ -1,5 +1,5 @@
 {
-  "name": "@dojo/grunt-extras",
+  "name": "grunt-dojo2-extras",
   "version": "2.0.0-beta1.1",
   "description": "A package of grunt tasks to assist with continuous deployment",
   "main": "index.js",
@@ -8,7 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/dojo/grunt-extras.git"
+    "url": "git+https://github.com/dojo/grunt-dojo2-extras.git"
   },
   "keywords": [
     "dojo2",
@@ -18,9 +18,9 @@
   "author": "Paul Shannon <paul@sitepen.com>",
   "license": "MPL-2.0",
   "bugs": {
-    "url": "https://github.com/dojo/grunt-extras/issues"
+    "url": "https://github.com/dojo/grunt-dojo2-extras/issues"
   },
-  "homepage": "https://github.com/dojo/grunt-extras#readme",
+  "homepage": "https://github.com/dojo/grunt-dojo2-extras#readme",
   "devDependencies": {
     "@dojo/loader": "^2.0.0-beta1.1",
     "@types/mockery": "^1.4.29",
@@ -50,7 +50,6 @@
     "@types/mkdirp": "^0.3.29",
     "@types/semver": "^5.3.31",
     "@types/winston": "^2.3.1",
-    "dojo-core": "^2.0.0-alpha.19",
     "mkdirp": "^0.5.1",
     "semver": "^5.3.0",
     "tslib": "^1.6.1",
