@@ -1,6 +1,6 @@
 {
 	"id": 755,
-	"name": "@dojo/grunt-extras",
+	"name": "grunt-dojo2-extras",
 	"kind": 0,
 	"flags": {},
 	"children": [
