@@ -2,9 +2,11 @@ import { repositorySource } from '../../src/util/environment';
 
 export const apiDirectory = '_apidocs';
 
-export const cloneDirectory = '.repo';
+export const cloneDirectory = '.sync';
 
 export const distDirectory = '_build';
+
+export const testTempDirectory = '.test';
 
 export const [ repoOwner, repoName ] = repositorySource().split('/');
 
@@ -13,7 +15,6 @@ export const api = {
 		format: 'html',
 		typedoc: {
 			mode: 'file',
-			externalPattern: '"**/+(example|examples|node_modules|tests|typings)/**/*.ts"',
 			excludeExternals: true,
 			excludeNotExported: true,
 			ignoreCompilerErrors: true
@@ -22,14 +23,14 @@ export const api = {
 	html: {
 		options: {
 			dest: '<%= apiDirectory %>',
-			src: 'src'
+			src: '.'
 		}
 	},
 	json: {
 		options: {
 			format: 'json',
 			dest: '<%= apiDirectory %>/api.json',
-			src: 'src'
+			src: '.'
 		}
 	}
 };
@@ -37,7 +38,8 @@ export const api = {
 export const clean = {
 	build: [ '<%= distDirectory %>' ],
 	dists: [ '<%= cloneDirectory %>' ],
-	repo: [ '<%= cloneDirectory %>/**/*', '!.git/**' ]
+	repo: [ '<%= cloneDirectory %>/**/*', '!.git/**' ],
+	tests: [ '<%= testTempDirectory %>' ]
 };
 
 export const copy = {
@@ -71,13 +73,20 @@ export const initAutomation = {
 };
 
 export const intern = {
+	options: {
+		runType: 'client',
+		reporters: [
+			'Console', 'LcovHtml'
+		]
+	},
 	unit: {
 		options: {
-			runType: 'client',
-			config: '_build/tests/intern',
-			reporters: [
-				'Console', 'LcovHtml'
-			]
+			config: '_build/tests/intern'
+		}
+	},
+	integration: {
+		options: {
+			config: '_build/tests/intern-integration'
 		}
 	}
 };

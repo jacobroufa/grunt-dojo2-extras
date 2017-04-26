@@ -26,8 +26,6 @@
 		"target": "ES5"
 	},
 	"include": [
-		"./src/**/*.ts",
-		"./tasks/**/*.ts",
-		"./tests/**/*.ts"
+		"*.ts"
 	]
 }

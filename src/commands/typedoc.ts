@@ -1,10 +1,13 @@
-import { dirname } from 'path';
-import { promiseExec as exec } from '../util/process';
+import { dirname, extname } from 'path';
 import { sync as mkdirp } from 'mkdirp';
 import { logger } from '../log';
+import { Application as TypedocApp, ProjectReflection } from 'typedoc';
+import { OptionsReadResult } from 'typedoc/dist/lib/utils/options';
+import { inspect } from 'util';
+import { existsSync, statSync } from 'fs';
+import { findConfigFile } from 'typescript';
 
 export interface BaseOptions {
-	source: string;
 	mode?: string;
 	exclude?: string;
 	includeDeclarations?: boolean;
@@ -13,10 +16,10 @@ export interface BaseOptions {
 	excludePrivate?: boolean;
 	module?: 'common.js' | 'amd' | 'system' | 'umd';
 	target?: 'ES3' | 'ES5' | 'ES6';
+	tsconfig?: boolean | string;
 }
 
 export interface HtmlOptions extends BaseOptions {
-	out: string;
 	theme?: 'default' | 'minimal' | string;
 	name?: string;
 	readme?: string;
@@ -28,42 +31,62 @@ export interface HtmlOptions extends BaseOptions {
 	media?: string;
 }
 
-export interface JsonOptions extends BaseOptions {
-	json: string;
+export type Options = HtmlOptions | BaseOptions;
+
+class Typedoc extends TypedocApp {
+	bootstrapResult: OptionsReadResult;
+
+	protected bootstrap(options?: any): OptionsReadResult {
+		return this.bootstrapResult = super.bootstrap(options);
+	}
+
+	generateJson(project: ProjectReflection | string[], out: string): boolean {
+		mkdirp(dirname(out));
+		return super.generateJson(<any> project, out);
+	}
+
+	generateDocs(project: ProjectReflection | string[], out: string): boolean {
+		mkdirp(out);
+		return super.generateDocs(<any> project, out);
+	}
 }
 
-export type Options = HtmlOptions | JsonOptions;
+function setOptions(source: string, options: BaseOptions): BaseOptions {
+	options = (<any> Object).assign({
+		module: 'umd',
+		target: 'ES5'
+	}, options);
 
-async function runTypedoc(options: Options) {
-	const typedocBin = require.resolve('typedoc/bin/typedoc');
-	const excluded = [ 'source' ];
-	const commandOptions = [];
-	for (const name in options) {
-		if (excluded.indexOf(name) === -1) {
-			const value: any = (<any> options)[name];
-			if (typeof value === 'boolean') {
-				commandOptions.push(`--${ name }`);
-			}
-			else {
-				commandOptions.push(`--${ name } ${ value }`);
-			}
+	if (options.tsconfig !== false) {
+		if (typeof options.tsconfig !== 'string') {
+			const config = findConfigFile(source, existsSync);
+			options.tsconfig = config;
 		}
 	}
-	if (options.source) {
-		commandOptions.push(options.source);
+	else {
+		delete options.tsconfig;
+		if (statSync(source).isDirectory()) {
+			logger.warn('typedoc cannot parse a directory without a tsconfig.json');
+		}
 	}
-	const command = `${ typedocBin } ${ commandOptions.join(' ')}`;
-	await exec(command);
+
+	logger.debug(`Typedoc Options ${ inspect(options) }`);
+
+	return options;
 }
 
-function isJsonOptions(options: Options): options is JsonOptions {
-	return 'json' in options;
-}
+export default async function typedoc(source: string, target: string, options: BaseOptions | HtmlOptions = {}) {
+	logger.info(`Building API Documentation for "${ source }" to "${ target }"`);
+	options = setOptions(source, options);
 
-export default async function typedoc(options: Options) {
-	const dir = isJsonOptions(options) ? dirname(options.json) : options.out;
+	const doc = new Typedoc(options);
+	const files = doc.expandInputFiles(doc.bootstrapResult.inputFiles);
+	logger.debug(`Processing files ${ inspect(files) }`);
 
-	logger.info(`Building API Documentation to ${ dir }`);
-	mkdirp(dir);
-	await runTypedoc(options);
+	if (extname(target) === '.json') {
+		doc.generateJson(files, target);
+	}
+	else {
+		doc.generateDocs(files, target);
+	}
 }

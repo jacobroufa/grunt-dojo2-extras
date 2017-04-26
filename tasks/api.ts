@@ -1,10 +1,5 @@
 import IMultiTask = grunt.task.IMultiTask;
-import typedoc, {
-	BaseOptions as TypedocBaseOptions,
-	HtmlOptions as TypedocHtmlOptions,
-	JsonOptions as TypedocJsonOptions,
-	Options as TypedocOptions
-} from '../src/commands/typedoc';
+import typedoc, { Options as TypedocOptions } from '../src/commands/typedoc';
 import wrapAsyncTask from './util/wrapAsyncTask';
 import GitHub, { Release } from '../src/util/GitHub';
 import sync from '../src/commands/sync';
@@ -17,7 +12,7 @@ import getReleases, {
 	latestFilter,
 	ReleaseFilter
 } from '../src/commands/getReleases';
-import { join } from 'path';
+import { join, resolve } from 'path';
 import { mkdtempSync } from 'fs';
 import installDependencies from '../src/commands/installDependencies';
 import { logger } from '../src/log';
@@ -89,19 +84,6 @@ function createTempDirectory(name: string = ''): string {
 	return mkdtempSync(join('.sync', name));
 }
 
-function createTypedocOptions(options: TaskOptions, target: string, source: string): TypedocOptions {
-	const typedocOptions: TypedocBaseOptions = (<any> Object).assign({}, options.typedoc, {
-		source
-	});
-	if (options.format === 'json') {
-		(<TypedocJsonOptions> typedocOptions).json = target;
-	}
-	else {
-		(<TypedocHtmlOptions> typedocOptions).out = target;
-	}
-	return <TypedocOptions> typedocOptions;
-}
-
 export = function (grunt: IGrunt) {
 	async function typedocTask(this: IMultiTask<any>) {
 		const options: any = this.options<Partial<TaskOptions>>({
@@ -145,14 +127,14 @@ export = function (grunt: IGrunt) {
 				if (options.skipInstall !== true) {
 					await installDependencies(cloneDirectory);
 				}
-				await typedoc(createTypedocOptions(options, target, cloneDirectory));
+				await typedoc(cloneDirectory, target, options.typedoc);
 			}
 		}
 		else {
 			if (options.skipInstall === false) {
 				await installDependencies(src);
 			}
-			await typedoc(createTypedocOptions(options, dest, src));
+			await typedoc(resolve(src), dest, options.typedoc);
 		}
 	}
 

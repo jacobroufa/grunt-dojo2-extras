@@ -2,6 +2,7 @@ import 'intern';
 
 export const loaderOptions = {
 	packages: [
+		{ name: 'assets', location: 'assets' },
 		{ name: 'tslib', location: './node_modules/tslib', main: 'tslib.js' },
 		{ name: 'tasks', location: './_build/tasks' },
 		{ name: 'src', location: './_build/src' },
