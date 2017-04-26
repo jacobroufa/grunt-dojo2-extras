@@ -9,13 +9,6 @@ export interface Options {
 	useremail?: string;
 }
 
-export async function assertUrl(url: string, git: Git) {
-	const remoteUrl = await git.getConfig('remote.origin.url');
-	if (url !== remoteUrl) {
-		throw new Error(`Existing repository url "${ remoteUrl }" is different from requested "${ url }"`);
-	}
-}
-
 export default async function sync(options: Options) {
 	const { branch, cloneDirectory, url } = options;
 	const git = new Git(cloneDirectory);
@@ -24,7 +17,7 @@ export default async function sync(options: Options) {
 	await git.ensureConfig(options.username, options.useremail);
 	if (git.isInitialized()) {
 		logger.info(`Using existing repository at ${ cloneDirectory }`);
-		await assertUrl(url, git);
+		await git.assert(url);
 	}
 	else {
 		await git.clone(url);

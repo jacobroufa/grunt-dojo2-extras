@@ -22,6 +22,20 @@ export default class Git {
 		return promiseExec(`git add ${ params.join(' ') }`, { silent: false, cwd: this.cloneDirectory});
 	}
 
+	/**
+	 * Ensures that a repository is initialized and matches the provided url
+	 */
+	async assert(url: string) {
+		if (!this.isInitialized()) {
+			throw new Error(`Repository is not initialized at "${ this.cloneDirectory }"`);
+		}
+
+		const repoUrl = await this.getConfig('remote.origin.url');
+		if (repoUrl !== url) {
+			throw new Error(`Repository mismatch. Expected "${ repoUrl }" to be "${ url }".`);
+		}
+	}
+
 	checkout(version: string) {
 		return promiseExec(`git checkout ${ version }`, { silent: false, cwd: this.cloneDirectory});
 	}
@@ -31,12 +45,9 @@ export default class Git {
 			throw new Error('A clone directory must be set');
 		}
 		logger.info(`Cloning ${ url } to ${ this.cloneDirectory }`);
-		if (existsSync(this.cloneDirectory)) {
+		if (this.isInitialized()) {
 			logger.info(`Repository exists at ${ this.cloneDirectory }`);
-			const repoUrl = await this.getConfig('remote.origin.url');
-			if (repoUrl !== url) {
-				throw new Error(`Repository mismatch. Expected "${ repoUrl }" to be "${ url }".`);
-			}
+			await this.assert(url);
 		}
 		await this.execSSHAgent('git', [ 'clone', url, this.cloneDirectory ], { silent: false });
 		this.url = url;
