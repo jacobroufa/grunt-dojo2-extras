@@ -20,6 +20,7 @@ import getReleases, {
 import { join } from 'path';
 import { mkdtempSync } from 'fs';
 import installDependencies from '../src/commands/installDependencies';
+import { logger } from '../src/log';
 
 interface BaseOptions {
 	dest: string;
@@ -122,9 +123,18 @@ export = function (grunt: IGrunt) {
 			const missing = await getMissing(repo, options);
 			const pathTemplate = format === 'json' ? getJsonApiPath : getHtmlApiPath;
 
+			if (missing.length === 0) {
+				if (options.filter) {
+					logger.info(`No APIs match the filter: "${ options.filter }`);
+				}
+				else {
+					logger.info(`all APIs are up-to-date.`);
+				}
+				return;
+			}
+
 			for (const release of missing) {
 				const target = pathTemplate(dest, repo.name, release.name);
-				const source = cloneDirectory;
 
 				await sync({
 					branch: release.name,
@@ -133,9 +143,9 @@ export = function (grunt: IGrunt) {
 				});
 
 				if (options.skipInstall !== true) {
-					await installDependencies(src);
+					await installDependencies(cloneDirectory);
 				}
-				await typedoc(createTypedocOptions(options, target, source));
+				await typedoc(createTypedocOptions(options, target, cloneDirectory));
 			}
 		}
 		else {
