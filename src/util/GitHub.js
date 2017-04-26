@@ -39,27 +39,15 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (v !== undefined) module.exports = v;
     }
     else if (typeof define === "function" && define.amd) {
-        define(["require", "exports", "@dojo/core/request", "./environment", "fs", "./streams"], factory);
+        define(["require", "exports", "./request", "./environment", "fs"], factory);
     }
 })(function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var request_1 = require("@dojo/core/request");
+    var request_1 = require("./request");
     var environment_1 = require("./environment");
     var fs_1 = require("fs");
-    var streams_1 = require("./streams");
     var API_URL = 'https://api.github.com';
-    function responseHandler(response) {
-        var statusCode = response.status;
-        if (statusCode < 200 || statusCode >= 300) {
-            var message_1 = response.statusText;
-            return streams_1.toString(response.nativeResponse)
-                .then(function (body) {
-                throw new Error("Github responded with " + statusCode + ". " + message_1 + ". " + body);
-            });
-        }
-        return response;
-    }
     var GitHub = (function () {
         function GitHub(owner, name, options) {
             if (options === void 0) { options = {}; }
@@ -96,10 +84,10 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
                             note: note
                         }),
                         password: this.password,
-                        user: this.username,
+                        user: this.username
                     };
                     return [2 /*return*/, request_1.default.post(endpoint, options)
-                            .then(responseHandler)
+                            .then(request_1.responseHandler)
                             .then(function (response) { return response.json(); })];
                 });
             });
@@ -112,7 +100,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
                     return [2 /*return*/, request_1.default.delete(endpoint, {
                             password: this.password,
                             user: this.username
-                        }).then(responseHandler)];
+                        }).then(request_1.responseHandler)];
                 });
             });
         };
@@ -129,7 +117,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
                 }),
                 password: this.password,
                 user: this.username
-            }).then(responseHandler)
+            }).then(request_1.responseHandler)
                 .then(function (response) { return response.json(); });
         };
         GitHub.prototype.authenticate = function (username, password) {
@@ -139,7 +127,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         GitHub.prototype.fetchReleases = function () {
             var url = API_URL + "/repos/" + this.owner + "/" + this.name + "/tags";
             return request_1.default(url)
-                .then(responseHandler)
+                .then(request_1.responseHandler)
                 .then(function (response) { return response.json(); });
         };
         GitHub.prototype.getHttpsUrl = function () {
