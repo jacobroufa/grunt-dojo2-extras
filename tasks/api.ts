@@ -13,9 +13,9 @@ import getReleases, {
 	ReleaseFilter
 } from '../src/commands/getReleases';
 import { join, resolve } from 'path';
-import { mkdtempSync } from 'fs';
 import installDependencies from '../src/commands/installDependencies';
 import { logger } from '../src/log';
+import { makeTempDirectory } from '../src/util/file';
 
 interface BaseOptions {
 	dest: string;
@@ -80,10 +80,6 @@ function getFilterOptions(filter?: RemoteApiOptions['filter']): ReleaseFilter[] 
 	return [ filter ];
 }
 
-function createTempDirectory(name: string = ''): string {
-	return mkdtempSync(join('.sync', name));
-}
-
 export = function (grunt: IGrunt) {
 	async function typedocTask(this: IMultiTask<any>) {
 		const options: any = this.options<Partial<TaskOptions>>({
@@ -101,7 +97,8 @@ export = function (grunt: IGrunt) {
 
 		if (isRemoteOptions(options)) {
 			const repo = getGitHub(options.repo);
-			const cloneDirectory = options.cloneDirectory ? options.cloneDirectory : createTempDirectory(repo.name);
+			const cloneDirectory = options.cloneDirectory ?
+				options.cloneDirectory : makeTempDirectory(join('.sync', repo.name));
 			const missing = await getMissing(repo, options);
 			const pathTemplate = format === 'json' ? getJsonApiPath : getHtmlApiPath;
 

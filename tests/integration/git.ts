@@ -4,7 +4,7 @@ import Git from 'src/util/Git';
 import { tmpDirectory } from '../_support/tmpFiles';
 
 registerSuite({
-	name: 'typedoc',
+	name: 'git',
 
 	async build() {
 		const out = tmpDirectory();
