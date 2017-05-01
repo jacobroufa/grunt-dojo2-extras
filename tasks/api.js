@@ -39,7 +39,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (v !== undefined) module.exports = v;
     }
     else if (typeof define === "function" && define.amd) {
-        define(["require", "exports", "../src/commands/typedoc", "./util/wrapAsyncTask", "../src/util/GitHub", "../src/commands/sync", "../src/commands/getReleases", "path", "fs", "../src/commands/installDependencies", "../src/log"], factory);
+        define(["require", "exports", "../src/commands/typedoc", "./util/wrapAsyncTask", "../src/util/GitHub", "../src/commands/sync", "../src/commands/getReleases", "path", "../src/commands/installDependencies", "../src/log", "../src/util/file"], factory);
     }
 })(function (require, exports) {
     "use strict";
@@ -49,9 +49,9 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     var sync_1 = require("../src/commands/sync");
     var getReleases_1 = require("../src/commands/getReleases");
     var path_1 = require("path");
-    var fs_1 = require("fs");
     var installDependencies_1 = require("../src/commands/installDependencies");
     var log_1 = require("../src/log");
+    var file_1 = require("../src/util/file");
     function isRemoteOptions(options) {
         return !!options.repo;
     }
@@ -94,10 +94,6 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         }
         return [filter];
     }
-    function createTempDirectory(name) {
-        if (name === void 0) { name = ''; }
-        return fs_1.mkdtempSync(path_1.join('.sync', name));
-    }
     return function (grunt) {
         function typedocTask() {
             return __awaiter(this, void 0, void 0, function () {
@@ -118,7 +114,8 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
                             src = options.src, dest = options.dest, format = options.format;
                             if (!isRemoteOptions(options)) return [3 /*break*/, 9];
                             repo = getGitHub(options.repo);
-                            cloneDirectory = options.cloneDirectory ? options.cloneDirectory : createTempDirectory(repo.name);
+                            cloneDirectory = options.cloneDirectory ?
+                                options.cloneDirectory : file_1.makeTempDirectory(path_1.join('.sync', repo.name));
                             return [4 /*yield*/, getMissing(repo, options)];
                         case 1:
                             missing = _a.sent();

@@ -49,7 +49,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     var Git_1 = require("src/util/Git");
     var tmpFiles_1 = require("../_support/tmpFiles");
     registerSuite({
-        name: 'typedoc',
+        name: 'git',
         build: function () {
             return __awaiter(this, void 0, void 0, function () {
                 var out, repo;
