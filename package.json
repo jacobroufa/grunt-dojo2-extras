@@ -1,6 +1,6 @@
 {
   "name": "grunt-dojo2-extras",
-  "version": "2.0.0-pre",
+  "version": "2.0.0-beta.1.2",
   "description": "A package of grunt tasks to assist with continuous deployment",
   "main": "index.js",
   "scripts": {
