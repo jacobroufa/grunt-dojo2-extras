@@ -1,6 +1,7 @@
 import * as registerSuite from 'intern!object';
 import * as assert from 'intern/chai!assert';
 import * as environment from '../../../../src/util/environment';
+import { appendFileSync, existsSync, unlinkSync } from 'fs';
 
 const relevantEnv = [
 	'TRAVIS_COMMIT_MESSAGE',
@@ -15,6 +16,8 @@ const relevantEnv = [
 	'PUBLISH_TARGET_REPO',
 	'TRAVIS_REPO_SLUG'
 ];
+const file = 'test.file';
+
 let mappedEnvs: { name: string; value: string; }[];
 
 registerSuite({
@@ -22,10 +25,24 @@ registerSuite({
 
 	before() {
 		mappedEnvs = relevantEnv.map((name) => ({ name, value: process.env[name] }));
+
+		if (existsSync(file)) {
+			unlinkSync(file);
+		}
 	},
 
 	afterEach() {
-		mappedEnvs.forEach((val) => process.env[val.name] = val.value);
+		mappedEnvs.forEach((val) => {
+			if (val.value) {
+				process.env[val.name] = val.value;
+			} else {
+				delete process.env[val.name];
+			}
+		});
+
+		if (existsSync(file)) {
+			unlinkSync(file);
+		}
 	},
 
 	commitMessage() {
@@ -53,18 +70,18 @@ registerSuite({
 		let fileWithExt = filename + '.enc';
 		let keyFileDefault = 'deploy_key.enc';
 
-		process.env.ENCRYPTED_KEY_FILE = null;
-		process.env.KEY_FILE = null;
+		delete process.env.ENCRYPTED_KEY_FILE;
+		delete process.env.KEY_FILE;
 		assert.equal(environment.encryptedKeyFile(), keyFileDefault);
 
 		process.env.KEY_FILE = filename;
 		assert.equal(environment.encryptedKeyFile(), fileWithExt);
 
-		process.env.KEY_FILE = null;
+		delete process.env.KEY_FILE;
 		process.env.ENCRYPTED_KEY_FILE = fileWithExt;
 		assert.equal(environment.encryptedKeyFile(), fileWithExt);
 
-		process.env.ENCRYPTED_KEY_FILE = null;
+		delete process.env.ENCRYPTED_KEY_FILE;
 		assert.equal(environment.encryptedKeyFile(filename), fileWithExt);
 	},
 
@@ -72,5 +89,72 @@ registerSuite({
 		let hash = 'ad64g9cc';
 		process.env.TRAVIS_COMMIT = hash;
 		assert.equal(environment.gitCommit(), hash);
+	},
+
+	hasGitCredentials() {
+		process.env.HAS_GIT_CREDENTIALS = 'true';
+		assert.isTrue(environment.hasGitCredentials());
+
+		delete process.env.HAS_GIT_CREDENTIALS;
+		assert.isTrue(environment.hasGitCredentials());
+
+		process.env.TRAVIS_BRANCH = 'master';
+		assert.isFalse(environment.hasGitCredentials(file));
+
+		appendFileSync(file, 'git credentials');
+		assert.isTrue(environment.hasGitCredentials(file));
+	},
+
+	hexoRootOverride() {
+		let hexoRoot = 'hexoRoot';
+		process.env.HEXO_ROOT = hexoRoot;
+		assert.equal(environment.hexoRootOverride(), hexoRoot);
+	},
+
+	hasKeyFile() {
+		assert.isFalse(environment.hasKeyFile(file));
+	},
+
+	isCronJob() {
+		process.env.TRAVIS_EVENT_TYPE = 'not cron';
+		assert.isFalse(environment.isCronJob());
+	},
+
+	isRunningOnTravis() {
+		delete process.env.TRAVIS_BRANCH;
+		assert.isFalse(environment.isRunningOnTravis());
+	},
+
+	keyFile() {
+		let fileName = 'key_file';
+		process.env.KEY_FILE = fileName;
+		assert.equal(environment.keyFile(), fileName);
+
+		delete process.env.KEY_FILE;
+		assert.equal(environment.keyFile(), 'deploy_key');
+	},
+
+	publishMode() {
+		let commit = 'commit';
+		process.env.DEPLOY_DOCS = commit;
+		assert.equal(environment.publishMode(), commit);
+
+		delete process.env.DEPLOY_DOCS;
+		process.env.TRAVIS_BRANCH = 'master';
+		assert.equal(environment.publishMode(), 'skip');
+	},
+
+	repositorySource() {
+		let target = 'target repo';
+		process.env.PUBLISH_TARGET_REPO = target;
+		assert.equal(environment.repositorySource(), target);
+
+		delete process.env.PUBLISH_TARGET_REPO;
+		let slug = 'target_repo';
+		process.env.TRAVIS_REPO_SLUG = slug;
+		assert.equal(environment.repositorySource(), slug);
+
+		delete process.env.TRAVIS_REPO_SLUG;
+		assert.equal(environment.repositorySource(), '');
 	}
 });
