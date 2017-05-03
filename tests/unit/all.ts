@@ -3,4 +3,5 @@ import './src/commands/getReleases';
 import './src/util/crypto';
 import './src/util/streams';
 import './src/util/environment';
+import './src/util/Git';
 import './tasks/util/getGithubSlug';
