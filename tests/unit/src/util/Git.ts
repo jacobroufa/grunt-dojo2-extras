@@ -22,8 +22,10 @@ registerSuite({
 
 	beforeEach() {
 		Module = loadModule('src/util/Git', {
-			promiseExec: promiseExecStub
-		}, false);
+			'./process': {
+				promiseExec: promiseExecStub
+			}
+		});
 
 		git = new Module();
 	},
