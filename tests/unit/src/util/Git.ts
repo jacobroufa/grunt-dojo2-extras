@@ -36,17 +36,28 @@ registerSuite({
 
 	Git: (() => {
 		return {
-			'default params'() {
-				assert.equal(git.cloneDirectory, process.cwd());
-				assert.equal(git.keyFile, env.keyFile());
+			'constructor': {
+				'with params'() {
+					const gitWithArgs = new Module('dir', 'file');
+					assert.equal(gitWithArgs.cloneDirectory, 'dir');
+					assert.equal(gitWithArgs.keyFile, 'file');
+				},
+				'default params'() {
+					assert.equal(git.cloneDirectory, process.cwd());
+					assert.equal(git.keyFile, env.keyFile());
+				}
 			},
 
 			async add() {
 				promiseExecStub.withArgs('git add file1 file2', {
 					silent: false,
 					cwd: git.cloneDirectory
-				}).returns(Promise);
-				assert.isTrue(git.add('file1', 'file2') instanceof Promise);
+				}).returns('pass');
+
+				const actual = git.add('file1', 'file2');
+
+				assert.instanceOf(actual, Promise);
+				assert.strictEqual(await actual, 'pass');
 			},
 
 			async assert() {
