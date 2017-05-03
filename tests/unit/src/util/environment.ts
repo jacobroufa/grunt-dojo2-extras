@@ -22,7 +22,6 @@ const file = 'test.file';
 let mappedEnvs: { name: string; value: string; }[];
 
 let module: any;
-let appendFileSyncStub: SinonStub;
 let existsSyncStub: SinonStub;
 
 registerSuite({
@@ -31,7 +30,6 @@ registerSuite({
 	before() {
 		mappedEnvs = relevantEnv.map((name) => ({ name, value: process.env[name] }));
 
-		appendFileSyncStub = stub();
 		existsSyncStub = stub();
 	},
 
@@ -105,19 +103,37 @@ registerSuite({
 		assert.equal(environment.gitCommit(), hash);
 	},
 
-	hasGitCredentials() {
-		process.env.HAS_GIT_CREDENTIALS = 'true';
-		assert.isTrue(environment.hasGitCredentials());
+	hasGitCredentials: {
+		'HAS_GIT_CREDENTIALS set: returns true'() {
+			process.env.HAS_GIT_CREDENTIALS = 'true';
+			assert.isTrue(module.hasGitCredentials());
+		},
 
-		delete process.env.TRAVIS_BRANCH;
-		delete process.env.HAS_GIT_CREDENTIALS;
-		assert.isTrue(environment.hasGitCredentials());
+		'Running  on Travis; no key file: returns false'() {
+			existsSyncStub.returns(false);
 
-		process.env.TRAVIS_BRANCH = 'master';
-		assert.isFalse(environment.hasGitCredentials(file));
+			delete process.env.HAS_GIT_CREDENTIALS;
+			process.env.TRAVIS_BRANCH = 'master';
 
-		appendFileSyncStub(file, 'git credentials');
-		assert.isTrue(environment.hasGitCredentials(file));
+			assert.isFalse(module.hasGitCredentials(file));
+		},
+
+		'Running on Travis; with key file: returns true'() {
+			existsSyncStub.returns(true);
+
+			delete process.env.HAS_GIT_CREDENTIALS;
+			process.env.TRAVIS_BRANCH = 'master';
+
+			assert.isTrue(module.hasGitCredentials(file));
+			assert.isTrue(existsSyncStub.called);
+			assert.strictEqual(existsSyncStub.lastCall.args[0], file);
+		},
+
+		'Running locally: returns true'() {
+			delete process.env.HAS_GIT_CREDENTIALS;
+			delete process.env.TRAVIS_BRANCH;
+			assert.isTrue(module.hasGitCredentials());
+		}
 	},
 
 	hexoRootOverride() {
