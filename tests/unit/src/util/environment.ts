@@ -1,7 +1,8 @@
 import * as registerSuite from 'intern!object';
 import * as assert from 'intern/chai!assert';
 import * as environment from '../../../../src/util/environment';
-import { appendFileSync, existsSync, unlinkSync } from 'fs';
+import loadModule, { cleanupModuleMocks } from '../../../_support/loadModule';
+import { stub, SinonStub } from 'sinon';
 
 const relevantEnv = [
 	'TRAVIS_COMMIT_MESSAGE',
@@ -20,15 +21,30 @@ const file = 'test.file';
 
 let mappedEnvs: { name: string; value: string; }[];
 
+let module: any;
+let appendFileSyncStub: SinonStub;
+let existsSyncStub: SinonStub;
+
 registerSuite({
 	name: 'util/environment',
 
 	before() {
 		mappedEnvs = relevantEnv.map((name) => ({ name, value: process.env[name] }));
 
-		if (existsSync(file)) {
-			unlinkSync(file);
-		}
+		appendFileSyncStub = stub();
+		existsSyncStub = stub();
+	},
+
+	after() {
+		cleanupModuleMocks();
+	},
+
+	beforeEach() {
+		module = loadModule('src/util/environment', {
+			fs: {
+				existsSync: existsSyncStub
+			}
+		}, false);
 	},
 
 	afterEach() {
@@ -40,9 +56,7 @@ registerSuite({
 			}
 		});
 
-		if (existsSync(file)) {
-			unlinkSync(file);
-		}
+		existsSyncStub.reset();
 	},
 
 	commitMessage() {
@@ -102,7 +116,7 @@ registerSuite({
 		process.env.TRAVIS_BRANCH = 'master';
 		assert.isFalse(environment.hasGitCredentials(file));
 
-		appendFileSync(file, 'git credentials');
+		appendFileSyncStub(file, 'git credentials');
 		assert.isTrue(environment.hasGitCredentials(file));
 	},
 
