@@ -95,6 +95,7 @@ registerSuite({
 		process.env.HAS_GIT_CREDENTIALS = 'true';
 		assert.isTrue(environment.hasGitCredentials());
 
+		delete process.env.TRAVIS_BRANCH;
 		delete process.env.HAS_GIT_CREDENTIALS;
 		assert.isTrue(environment.hasGitCredentials());
 
