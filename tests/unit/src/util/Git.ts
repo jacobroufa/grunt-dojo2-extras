@@ -11,6 +11,7 @@ let promiseSpawnStub: SinonStub;
 let promiseExecStub: SinonStub;
 let execStub: SinonStub;
 let loggerStub: SinonStub;
+let toStringStub: SinonStub;
 let existsSyncStub: SinonStub;
 let chmodSyncStub: SinonStub;
 
@@ -22,6 +23,7 @@ registerSuite({
 		promiseExecStub = stub();
 		execStub = stub();
 		loggerStub = stub();
+		toStringStub = stub();
 		existsSyncStub = stub();
 		chmodSyncStub = stub();
 	},
@@ -42,6 +44,9 @@ registerSuite({
 					info: loggerStub
 				}
 			},
+			'./streams': {
+				toString: toStringStub
+			},
 			fs: {
 				existsSync: existsSyncStub,
 				chmodSync: chmodSyncStub
@@ -56,6 +61,7 @@ registerSuite({
 		promiseExecStub.reset();
 		execStub.reset();
 		loggerStub.reset();
+		toStringStub.reset();
 		existsSyncStub.reset();
 		chmodSyncStub.reset();
 	},
@@ -207,29 +213,138 @@ registerSuite({
 	},
 
 	async getConfig() {
+		execStub.withArgs('git config key', {
+			silent: true,
+			cwd: git.cloneDirectory
+		}).returns({ stdout: 'key' });
+		toStringStub.withArgs('key').returns('key');
+
+		const keyConfig = await git.getConfig('key');
+
+		assert.isTrue(execStub.calledOnce);
+		assert.isTrue(toStringStub.calledOnce);
+		assert.strictEqual(keyConfig, 'key');
 	},
 
-	async areFilesChanged() {
+	areFilesChanged: {
+		beforeEach() {
+			execStub.withArgs('git status --porcelain', {
+				silent: true,
+				cwd: git.cloneDirectory
+			});
+		},
+		async 'exec and toString each called once'() {
+			execStub.returns({ stdout: '' });
+			toStringStub.returns('');
+
+			await git.areFilesChanged();
+
+			assert.isTrue(execStub.calledOnce);
+			assert.isTrue(toStringStub.calledOnce);
+		},
+		async 'files are changed; returns true'() {
+			execStub.returns({ stdout: 'changed' });
+			toStringStub.withArgs('changed').returns('changed');
+
+			const changed = await git.areFilesChanged();
+
+			assert.isTrue(changed);
+		},
+		async 'files are not changed; returns false'() {
+			execStub.returns({ stdout: '' });
+			toStringStub.withArgs('').returns('');
+
+			const changed = await git.areFilesChanged();
+
+			assert.isFalse(changed);
+		}
 	},
 
-	async hasConfig() {
+	hasConfig: {
+		async 'has a configuration value'() {
+			git.getConfig = async () => 'config';
+			const hasConfig = await git.hasConfig('config');
+			assert.isTrue(hasConfig);
+		},
+		async 'has no configuration value'() {
+			git.getConfig = async () => '';
+			const hasConfig = await git.hasConfig('config');
+			assert.isFalse(hasConfig);
+		}
 	},
 
 	hasDeployCredentials() {
+		const exists = existsSyncStub.withArgs(git.keyFile);
+
+		exists.returns(true);
+		assert.isTrue(git.hasDeployCredentials());
+
+		exists.returns(false);
+		assert.isFalse(git.hasDeployCredentials());
 	},
 
 	async headRevision() {
+		const hash = '505b86ca8feb5295789720ef9d56cf016c217b0e';
+
+		execStub.withArgs('git rev-parse HEAD', {
+			silent: false,
+			cwd: git.cloneDirectory
+		}).returns({ stdout: hash });
+		toStringStub.withArgs(hash)
+			.returns(hash);
+
+		const revision = await git.headRevision();
+
+		assert.isTrue(execStub.calledOnce);
+		assert.isTrue(toStringStub.calledOnce);
+
+		assert.strictEqual(revision, hash);
 	},
 
-	isInitialized() {
+	isInitialized: {
+		'throws error if there is no cloneDirectory'() {
+			git.cloneDirectory = undefined;
+			assert.throws(git.isInitialized);
+
+			try {
+				git.isInitialized();
+			} catch (e) {
+				assert.strictEqual(e.message, 'A clone directory must be set');
+			}
+		},
+		'cloneDirectory exists but not counterpart .git directory; returns false'() {
+			existsSyncStub.returns(false);
+			existsSyncStub.withArgs(git.cloneDirectory).returns(true);
+			assert.isFalse(git.isInitialized());
+		},
+		'cloneDirectory and .git directory exist; returns true'() {
+			existsSyncStub.returns(true);
+			assert.isTrue(git.isInitialized());
+		}
 	},
 
 	pull() {
+		const execSSHAgentStub = git.execSSHAgent = stub();
+
+		git.pull('origin', 'master');
+		assert.isTrue(execSSHAgentStub.calledWith('git', [ 'pull', 'origin', 'master' ], { cwd: git.cloneDirectory }));
+
+		git.pull();
+		assert.isTrue(execSSHAgentStub.calledWith('git', [ 'pull' ], { cwd: git.cloneDirectory }));
 	},
 
 	push() {
+		const execSSHAgentStub = git.execSSHAgent = stub();
+
+		git.push('master', 'origin');
+		assert.isTrue(execSSHAgentStub.calledWith('git', [ 'push', 'origin', 'master' ], { silent: false, cwd: git.cloneDirectory }));
+
+		git.push();
+		assert.isTrue(execSSHAgentStub.calledWith('git', [ 'push' ], { silent: false, cwd: git.cloneDirectory }));
 	},
 
 	setConfig() {
+		git.setConfig('key', 'value');
+		assert.isTrue(promiseExecStub.calledWith('git config --global key value', { silent: false }));
 	}
 });
