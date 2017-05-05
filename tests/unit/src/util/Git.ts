@@ -7,13 +7,23 @@ import * as env from '../../../../src/util/environment';
 
 let Module: any;
 let git: Git;
+let promiseSpawnStub: SinonStub;
 let promiseExecStub: SinonStub;
+let execStub: SinonStub;
+let loggerStub: SinonStub;
+let existsSyncStub: SinonStub;
+let chmodSyncStub: SinonStub;
 
 registerSuite({
 	name: 'util/Git',
 
 	before() {
+		promiseSpawnStub = stub();
 		promiseExecStub = stub();
+		execStub = stub();
+		loggerStub = stub();
+		existsSyncStub = stub();
+		chmodSyncStub = stub();
 	},
 
 	after() {
@@ -23,7 +33,18 @@ registerSuite({
 	beforeEach() {
 		Module = loadModule('src/util/Git', {
 			'./process': {
-				promiseExec: promiseExecStub
+				promiseSpawn: promiseSpawnStub,
+				promiseExec: promiseExecStub,
+				exec: execStub
+			},
+			'../log': {
+				logger: {
+					info: loggerStub
+				}
+			},
+			fs: {
+				existsSync: existsSyncStub,
+				chmodSync: chmodSyncStub
 			}
 		});
 
@@ -31,82 +52,184 @@ registerSuite({
 	},
 
 	afterEach() {
+		promiseSpawnStub.reset();
 		promiseExecStub.reset();
+		execStub.reset();
+		loggerStub.reset();
+		existsSyncStub.reset();
+		chmodSyncStub.reset();
 	},
 
-	Git: (() => {
-		return {
-			'constructor': {
-				'with params'() {
-					const gitWithArgs = new Module('dir', 'file');
-					assert.equal(gitWithArgs.cloneDirectory, 'dir');
-					assert.equal(gitWithArgs.keyFile, 'file');
-				},
-				'default params'() {
-					assert.equal(git.cloneDirectory, process.cwd());
-					assert.equal(git.keyFile, env.keyFile());
-				}
-			},
+	'constructor': {
+		'with params'() {
+			const gitWithArgs = new Module('dir', 'file');
+			assert.equal(gitWithArgs.cloneDirectory, 'dir');
+			assert.equal(gitWithArgs.keyFile, 'file');
+		},
+		'default params'() {
+			assert.equal(git.cloneDirectory, process.cwd());
+			assert.equal(git.keyFile, env.keyFile());
+		}
+	},
 
-			async add() {
-				promiseExecStub.withArgs('git add file1 file2', {
-					silent: false,
-					cwd: git.cloneDirectory
-				}).returns('pass');
+	async add() {
+		promiseExecStub.withArgs('git add file1 file2', {
+			silent: false,
+			cwd: git.cloneDirectory
+		}).returns('pass');
 
-				const actual = git.add('file1', 'file2');
+		const actual = git.add('file1', 'file2');
 
-				assert.instanceOf(actual, Promise);
-				assert.strictEqual(await actual, 'pass');
-			},
+		assert.instanceOf(actual, Promise);
+		assert.strictEqual(await actual, 'pass');
+	},
 
-			async assert() {
-			},
+	async assert() {
+		git.isInitialized = () => false;
+		git.assert('url').then(() => assert.fail(), (error: Error) => {
+			assert.strictEqual(error.message,
+				`Repository is not initialized at "${ git.cloneDirectory }"`);
+		});
 
-			checkout() {
-			},
+		git.isInitialized = () => true;
+		git.getConfig = stub().withArgs('remote.origin.url')
+			.returns('url');
 
-			async clone() {
-			},
+		git.assert('other_url').then(() => assert.fail(), (error: Error) => {
+			assert.strictEqual(error.message,
+				'Repository mismatch. Expected "url" to be "other_url".');
+		});
+		assert.doesNotThrow(async () => await git.assert('url'));
+	},
 
-			async commit() {
-			},
+	async checkout() {
+		promiseExecStub.withArgs('git checkout 1.2.3', {
+			silent: false,
+			cwd: git.cloneDirectory
+		}).returns(Promise.resolve('pass'));
 
-			async createOrphan() {
-			},
+		const actual = git.checkout('1.2.3');
 
-			async ensureConfig() {
-			},
+		assert.instanceOf(actual, Promise);
+		assert.strictEqual(await actual, 'pass');
+	},
 
-			execSSHAgent() {
-			},
+	clone: {
+		'If clone directory is not set; throws'() {
+			delete git.cloneDirectory;
+			git.clone('url').then(() => assert.fail(), (error: Error) => {
+				assert.equal(error.message,
+					'A clone directory must be set');
+			});
+		},
 
-			async getConfig() {
-			},
+		// logger should be called once internally and once within execSSHAgent
+		async 'Not initialized; logger called 1x, git.url === url'() {
+			const url = 'url';
+			git.isInitialized = () => false;
+			await git.clone(url);
+			assert.isTrue(loggerStub.calledTwice);
+			assert.strictEqual(git.url, url);
+		},
 
-			async areFilesChanged() {
-			},
+		async 'Properly initialized; logger called 3x, git.url === url'() {
+			const url = 'url';
+			git.isInitialized = () => true;
+			git.assert = stub().withArgs(url)
+				.returns(true);
+			await git.clone(url);
+			assert.isTrue(loggerStub.calledThrice);
+			assert.strictEqual(git.url, url);
+		}
+	},
 
-			async hasConfig() {
-			},
+	async commit() {
+		const esa: SinonStub = git.execSSHAgent = stub().returns(Promise.resolve());
+		await git.commit('message');
+		assert.isTrue(esa.calledOnce);
+	},
 
-			hasDeployCredentials() {
-			},
+	createOrphan: {
+		'If clone directory is not set; throws'() {
+			delete git.cloneDirectory;
+			git.createOrphan('branch').then(() => assert.fail(), (error: Error) => {
+				assert.equal(error.message,
+					'A clone directory must be set');
+			});
+		},
 
-			async headRevision() {
-			},
+		async 'promiseExec called twice, logger.info called once'() {
+			await git.createOrphan('branch');
+			assert.isTrue(promiseExecStub.calledTwice);
+			assert.isTrue(loggerStub.calledOnce);
+		}
+	},
 
-			isInitialized() {
-			},
+	ensureConfig: {
+		async 'hasConfig for user.name, user.email'() {
+			git.hasConfig = stub().returns(true);
+			const setConfig = git.setConfig = stub();
+			await git.ensureConfig();
+			assert.isTrue(setConfig.notCalled);
+		},
 
-			pull() {
-			},
+		async '!hasConfig for user.name, user.email; default args set'() {
+			git.hasConfig = stub().returns(false);
+			const setConfig = git.setConfig = stub();
+			await git.ensureConfig();
+			assert.isTrue(setConfig.calledWith('user.name', 'Travis CI'));
+			assert.isTrue(setConfig.calledWith('user.email', 'support@sitepen.com'));
+		},
 
-			push() {
-			},
+		async '!hasConfig for user.name, user.email; explicit args set'() {
+			git.hasConfig = stub().returns(false);
+			const setConfig = git.setConfig = stub();
+			await git.ensureConfig('name', 'email');
+			assert.isTrue(setConfig.calledWith('user.name', 'name'));
+			assert.isTrue(setConfig.calledWith('user.email', 'email'));
+		}
+	},
 
-			setConfig() {
-			}
-		};
-	})()
+	execSSHAgent: {
+		async '!hasDeployCredentials; logger, promiseSpawn called'() {
+			git.hasDeployCredentials = () => false;
+			await git.execSSHAgent('git', [ 'status' ], { silent: false });
+			assert.isTrue(loggerStub.calledOnce);
+			assert.isTrue(promiseSpawnStub.calledOnce);
+		},
+
+		async 'hasDeployCredentials; chmodSync, promiseExec called'() {
+			git.hasDeployCredentials = () => true;
+			await git.execSSHAgent('git', [ 'status' ], { silent: false });
+			assert.isTrue(chmodSyncStub.calledOnce);
+			assert.isTrue(promiseExecStub.calledOnce);
+		}
+	},
+
+	async getConfig() {
+	},
+
+	async areFilesChanged() {
+	},
+
+	async hasConfig() {
+	},
+
+	hasDeployCredentials() {
+	},
+
+	async headRevision() {
+	},
+
+	isInitialized() {
+	},
+
+	pull() {
+	},
+
+	push() {
+	},
+
+	setConfig() {
+	}
 });
