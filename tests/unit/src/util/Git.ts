@@ -1,16 +1,15 @@
 import * as registerSuite from 'intern!object';
 import * as assert from 'intern/chai!assert';
 import loadModule, { cleanupModuleMocks } from '../../../_support/loadModule';
-import { stub, SinonStub } from 'sinon';
-import Git from '../../../../src/util/Git';
-import * as env from '../../../../src/util/environment';
+import { spy, stub, SinonStub } from 'sinon';
+import Git from 'src/util/Git';
+import * as env from 'src/util/environment';
 
 let Module: any;
 let git: Git;
 let promiseSpawnStub: SinonStub;
 let promiseExecStub: SinonStub;
 let execStub: SinonStub;
-let loggerStub: SinonStub;
 let toStringStub: SinonStub;
 let existsSyncStub: SinonStub;
 let chmodSyncStub: SinonStub;
@@ -22,7 +21,6 @@ registerSuite({
 		promiseSpawnStub = stub();
 		promiseExecStub = stub();
 		execStub = stub();
-		loggerStub = stub();
 		toStringStub = stub();
 		existsSyncStub = stub();
 		chmodSyncStub = stub();
@@ -38,11 +36,6 @@ registerSuite({
 				promiseSpawn: promiseSpawnStub,
 				promiseExec: promiseExecStub,
 				exec: execStub
-			},
-			'../log': {
-				logger: {
-					info: loggerStub
-				}
 			},
 			'./streams': {
 				toString: toStringStub
@@ -60,7 +53,6 @@ registerSuite({
 		promiseSpawnStub.reset();
 		promiseExecStub.reset();
 		execStub.reset();
-		loggerStub.reset();
 		toStringStub.reset();
 		existsSyncStub.reset();
 		chmodSyncStub.reset();
@@ -105,7 +97,7 @@ registerSuite({
 			assert.strictEqual(error.message,
 				'Repository mismatch. Expected "url" to be "other_url".');
 		});
-		assert.doesNotThrow(async () => await git.assert('url'));
+		assert.doesNotThrow(() => git.assert('url'));
 	},
 
 	async checkout() {
@@ -121,7 +113,7 @@ registerSuite({
 	},
 
 	clone: {
-		'If clone directory is not set; throws'() {
+		'If clone directory is not set; eventually rejects'() {
 			delete git.cloneDirectory;
 			git.clone('url').then(() => assert.fail(), (error: Error) => {
 				assert.equal(error.message,
@@ -129,30 +121,34 @@ registerSuite({
 			});
 		},
 
-		// logger should be called once internally and once within execSSHAgent
-		async 'Not initialized; logger called 1x, git.url === url'() {
+		async 'Not initialized; assert not called, execSSHAgent called once, git.url === url'() {
 			const url = 'url';
+			const assertSpy = spy(git, 'assert');
+			const execSSHAgentStub = stub(git, 'execSSHAgent').returns(Promise.resolve());
 			git.isInitialized = () => false;
 			await git.clone(url);
-			assert.isTrue(loggerStub.calledTwice);
+			assert.isTrue(assertSpy.notCalled);
+			assert.isTrue(execSSHAgentStub.called);
 			assert.strictEqual(git.url, url);
 		},
 
-		async 'Properly initialized; logger called 3x, git.url === url'() {
+		async 'Properly initialized; assert called once, execSSHAgent called once, git.url === url'() {
 			const url = 'url';
+			const assertStub = stub(git, 'assert');
+			const execSSHAgentStub = stub(git, 'execSSHAgent').returns(Promise.resolve());
 			git.isInitialized = () => true;
-			git.assert = stub().withArgs(url)
-				.returns(true);
 			await git.clone(url);
-			assert.isTrue(loggerStub.calledThrice);
+			assert.isTrue(assertStub.called);
+			assert.isTrue(execSSHAgentStub.called);
 			assert.strictEqual(git.url, url);
 		}
 	},
 
 	async commit() {
-		const esa: SinonStub = git.execSSHAgent = stub().returns(Promise.resolve());
+		const execSSHAgent = stub(git, 'execSSHAgent').returns(Promise.resolve());
 		await git.commit('message');
-		assert.isTrue(esa.calledOnce);
+		assert.isTrue(execSSHAgent.calledOnce);
+		assert.isTrue(execSSHAgent.calledWith('git', ['commit', '-m', '"message"'], { silent: false, cwd: git.cloneDirectory }));
 	},
 
 	createOrphan: {
@@ -164,10 +160,12 @@ registerSuite({
 			});
 		},
 
-		async 'promiseExec called twice, logger.info called once'() {
+		async 'promiseExec called twice with proper options'() {
+			const execOptions = { silent: true, cwd: git.cloneDirectory };
 			await git.createOrphan('branch');
 			assert.isTrue(promiseExecStub.calledTwice);
-			assert.isTrue(loggerStub.calledOnce);
+			assert.isTrue(promiseExecStub.calledWith('git checkout --orphan branch', execOptions));
+			assert.isTrue(promiseExecStub.calledWith('git rm -rf .', execOptions));
 		}
 	},
 
@@ -197,18 +195,26 @@ registerSuite({
 	},
 
 	execSSHAgent: {
-		async '!hasDeployCredentials; logger, promiseSpawn called'() {
+		async '!hasDeployCredentials; promiseSpawn called'() {
+			const command = 'git';
+			const args = [ 'status' ];
+			const opts = { silent: false };
 			git.hasDeployCredentials = () => false;
-			await git.execSSHAgent('git', [ 'status' ], { silent: false });
-			assert.isTrue(loggerStub.calledOnce);
+			await git.execSSHAgent(command, args, opts);
 			assert.isTrue(promiseSpawnStub.calledOnce);
+			assert.isTrue(promiseSpawnStub.calledWith(command, args, opts));
 		},
 
 		async 'hasDeployCredentials; chmodSync, promiseExec called'() {
+			const command = 'git';
+			const args = [ 'status' ];
+			const opts = { silent: false };
+			git.keyFile = 'key.file';
 			git.hasDeployCredentials = () => true;
-			await git.execSSHAgent('git', [ 'status' ], { silent: false });
+			await git.execSSHAgent(command, args, opts);
 			assert.isTrue(chmodSyncStub.calledOnce);
 			assert.isTrue(promiseExecStub.calledOnce);
+			assert.isTrue(promiseExecStub.calledWith(`ssh-agent bash -c 'ssh-add key.file; git status'`, opts));
 		}
 	},
 
