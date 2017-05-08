@@ -1,22 +1,9 @@
 import * as registerSuite from 'intern!object';
 import * as assert from 'intern/chai!assert';
-import * as environment from '../../../../src/util/environment';
+import * as environment from 'src/util/environment';
 import loadModule, { cleanupModuleMocks } from '../../../_support/loadModule';
 import { stub, SinonStub } from 'sinon';
 
-const relevantEnv = [
-	'TRAVIS_COMMIT_MESSAGE',
-	'TRAVIS_BRANCH',
-	'ENCRYPTED_KEY_FILE',
-	'TRAVIS_COMMIT',
-	'HAS_GIT_CREDENTIALS',
-	'HEXO_ROOT',
-	'TRAVIS_EVENT_TYPE',
-	'KEY_FILE',
-	'DEPLOY_DOCS',
-	'PUBLISH_TARGET_REPO',
-	'TRAVIS_REPO_SLUG'
-];
 const file = 'test.file';
 
 let mappedEnvs: { name: string; value: string; }[];
@@ -28,6 +15,20 @@ registerSuite({
 	name: 'util/environment',
 
 	before() {
+		const relevantEnv = [
+			'TRAVIS_COMMIT_MESSAGE',
+			'TRAVIS_BRANCH',
+			'ENCRYPTED_KEY_FILE',
+			'TRAVIS_COMMIT',
+			'HAS_GIT_CREDENTIALS',
+			'HEXO_ROOT',
+			'TRAVIS_EVENT_TYPE',
+			'KEY_FILE',
+			'DEPLOY_DOCS',
+			'PUBLISH_TARGET_REPO',
+			'TRAVIS_REPO_SLUG'
+		];
+
 		mappedEnvs = relevantEnv.map((name) => ({ name, value: process.env[name] }));
 
 		existsSyncStub = stub();
@@ -58,15 +59,15 @@ registerSuite({
 	},
 
 	commitMessage() {
-		let commit = 'update test coverage for `util/environment`';
-		process.env.TRAVIS_COMMIT_MESSAGE = commit;
-		assert.equal(environment.commitMessage(), commit);
+		const expected = 'update test coverage for `util/environment`';
+		process.env.TRAVIS_COMMIT_MESSAGE = expected;
+		assert.equal(environment.commitMessage(), expected);
 	},
 
 	currentBranch() {
-		let branch = 'master';
-		process.env.TRAVIS_BRANCH = branch;
-		assert.equal(environment.currentBranch(), branch);
+		const expected = 'master';
+		process.env.TRAVIS_BRANCH = expected;
+		assert.equal(environment.currentBranch(), expected);
 	},
 
 	decryptIvName() {
@@ -77,28 +78,35 @@ registerSuite({
 		assert.equal(environment.decryptKeyName(), 'publish_deploy_key');
 	},
 
-	encryptedKeyFile() {
-		let filename = 'keyfile';
-		let fileWithExt = filename + '.enc';
-		let keyFileDefault = 'deploy_key.enc';
+	encryptedKeyFile: {
+		'returns ENCRYPTED_KEY_FILE'() {
+			const filename = 'keyfile';
+			const fileWithExt = filename + '.enc';
 
-		delete process.env.ENCRYPTED_KEY_FILE;
-		delete process.env.KEY_FILE;
-		assert.equal(environment.encryptedKeyFile(), keyFileDefault);
+			delete process.env.KEY_FILE;
+			process.env.ENCRYPTED_KEY_FILE = fileWithExt;
+			assert.equal(environment.encryptedKeyFile(), fileWithExt);
+		},
 
-		process.env.KEY_FILE = filename;
-		assert.equal(environment.encryptedKeyFile(), fileWithExt);
+		'returns value passed'() {
+			const filename = 'keyfile';
+			const fileWithExt = filename + '.enc';
 
-		delete process.env.KEY_FILE;
-		process.env.ENCRYPTED_KEY_FILE = fileWithExt;
-		assert.equal(environment.encryptedKeyFile(), fileWithExt);
+			delete process.env.ENCRYPTED_KEY_FILE;
+			assert.equal(environment.encryptedKeyFile(filename), fileWithExt);
+		},
 
-		delete process.env.ENCRYPTED_KEY_FILE;
-		assert.equal(environment.encryptedKeyFile(filename), fileWithExt);
+		'returns default encrypted key file'() {
+			const keyFileDefault = 'deploy_key.enc';
+
+			delete process.env.ENCRYPTED_KEY_FILE;
+			delete process.env.KEY_FILE;
+			assert.equal(environment.encryptedKeyFile(), keyFileDefault);
+		}
 	},
 
 	gitCommit() {
-		let hash = 'ad64g9cc';
+		const hash = 'ad64g9cc';
 		process.env.TRAVIS_COMMIT = hash;
 		assert.equal(environment.gitCommit(), hash);
 	},
@@ -137,7 +145,7 @@ registerSuite({
 	},
 
 	hexoRootOverride() {
-		let hexoRoot = 'hexoRoot';
+		const hexoRoot = 'hexoRoot';
 		process.env.HEXO_ROOT = hexoRoot;
 		assert.equal(environment.hexoRootOverride(), hexoRoot);
 	},
@@ -156,36 +164,50 @@ registerSuite({
 		assert.isFalse(environment.isRunningOnTravis());
 	},
 
-	keyFile() {
-		let fileName = 'key_file';
-		process.env.KEY_FILE = fileName;
-		assert.equal(environment.keyFile(), fileName);
+	keyFile: {
+		'returns KEY_FILE'() {
+			const fileName = 'key_file';
+			process.env.KEY_FILE = fileName;
+			assert.equal(environment.keyFile(), fileName);
+		},
 
-		delete process.env.KEY_FILE;
-		assert.equal(environment.keyFile(), 'deploy_key');
+		'returns value passed'() {
+			delete process.env.KEY_FILE;
+			assert.equal(environment.keyFile(), 'deploy_key');
+		}
 	},
 
-	publishMode() {
-		let commit = 'commit';
-		process.env.DEPLOY_DOCS = commit;
-		assert.equal(environment.publishMode(), commit);
+	publishMode: {
+		'returns DEPLOY_DOCS'() {
+			const commit = 'commit';
+			process.env.DEPLOY_DOCS = commit;
+			assert.equal(environment.publishMode(), commit);
+		},
 
-		delete process.env.DEPLOY_DOCS;
-		process.env.TRAVIS_BRANCH = 'master';
-		assert.equal(environment.publishMode(), 'skip');
+		'returns `skip` if running on Travis'() {
+			delete process.env.DEPLOY_DOCS;
+			process.env.TRAVIS_BRANCH = 'master';
+			assert.equal(environment.publishMode(), 'skip');
+		}
 	},
 
-	repositorySource() {
-		let target = 'target repo';
-		process.env.PUBLISH_TARGET_REPO = target;
-		assert.equal(environment.repositorySource(), target);
+	repositorySource: {
+		'returns PUBLISH_TARGET_REPO if available'() {
+			const target = 'target repo';
+			process.env.PUBLISH_TARGET_REPO = target;
+			assert.equal(environment.repositorySource(), target);
+		},
 
-		delete process.env.PUBLISH_TARGET_REPO;
-		let slug = 'target_repo';
-		process.env.TRAVIS_REPO_SLUG = slug;
-		assert.equal(environment.repositorySource(), slug);
+		'returns TRAVIS_REPO_SLUG if PUBLISH_TARGET_REPO unavailable'() {
+			delete process.env.PUBLISH_TARGET_REPO;
+			const slug = 'target_repo';
+			process.env.TRAVIS_REPO_SLUG = slug;
+			assert.equal(environment.repositorySource(), slug);
+		},
 
-		delete process.env.TRAVIS_REPO_SLUG;
-		assert.equal(environment.repositorySource(), '');
+		'returns empty string if TRAVIS_REPO_SLUG and PUBLISH_TARGET_REPO unavailable'() {
+			delete process.env.TRAVIS_REPO_SLUG;
+			assert.equal(environment.repositorySource(), '');
+		}
 	}
 });
