@@ -5,14 +5,22 @@ import { stub, SinonStub } from 'sinon';
 
 let module: any;
 let GitStub: SinonStub;
+let isInitializedStub: SinonStub;
+
+const syncOptions = {
+	branch: 'master',
+	cloneDirectory: 'dir',
+	url: 'http://web.site'
+};
 
 registerSuite({
 	name: 'commands/sync',
 
 	before() {
+		isInitializedStub = stub();
 		GitStub = stub().returns({
 			ensureConfig: stub(),
-			isInitialized: stub(),
+			isInitialized: isInitializedStub,
 			assert: stub(),
 			clone: stub(),
 			checkout: stub(),
@@ -33,13 +41,22 @@ registerSuite({
 
 	afterEach() {
 		GitStub.reset();
+		isInitializedStub.reset();
 	},
 
 	sync: {
 		async 'Git initialized'() {
+			isInitializedStub.returns(true);
+			await module.sync(syncOptions);
+
+			assert.isTrue(GitStub.calledOnce);
 		},
 
 		async 'Git not initialized'() {
+			isInitializedStub.returns(false);
+			await module.sync(syncOptions);
+
+			assert.isTrue(GitStub.calledOnce);
 		}
 	}
 });

@@ -1,5 +1,6 @@
 import './src/log';
 import './src/commands/getReleases';
+import './src/commands/sync';
 import './src/util/crypto';
 import './src/util/streams';
 import './src/util/environment';
