@@ -2,7 +2,7 @@ import * as registerSuite from 'intern!object';
 import * as assert from 'intern/chai!assert';
 import { stub, SinonStub } from 'sinon';
 import loadModule, { cleanupModuleMocks } from '../../../_support/loadModule';
-import * as process from 'src/util/process';
+import * as processUtil from 'src/util/process';
 import { LogStream } from 'src/log';
 
 let module: any;
@@ -35,24 +35,43 @@ registerSuite({
 		spawnStub.reset();
 	},
 
-	promisify: {
-		'promisify eventually resolves the returned promise'() {
-			process.promisify(process.exec('ls', { silent: true })).then((procVal) => {
-				assert.isOk(procVal);
-			});
-		},
+	promisify: (() => {
+		const proc = {
+			stdout: { pipe: stub() },
+			stderr: { pipe: stub() },
+			on: stub()
+		};
 
-		'if child process has exit code other than 0, promisify eventually rejects the returned promise'() {
-			process.promisify(process.exec('not-a-command', { silent: true })).then(() => {
-				assert.fail();
-			}, (e) => {
-				assert.instanceOf(e, Error);
-			});
-		}
-	},
+		stub(processUtil, 'exec').returns(proc);
+
+		return {
+			async 'eventually resolves the returned promise'() {
+				const promise = processUtil.promisify(processUtil.exec('test'));
+
+				proc.on.lastCall.args[1](0);
+				assert.equal(proc, await promise);
+
+				return promise;
+			},
+
+			async 'child process exits with code other than 0; eventually rejects the returned promise'() {
+				let promise;
+
+				try {
+					promise = processUtil.promisify(processUtil.exec('test'));
+
+					proc.on.lastCall.args[1](1);
+					assert.equal(proc, await promise);
+				} catch (e) {
+					assert.strictEqual(e.message, 'Process exited with a code of 1');
+					assert.strictEqual(process.exitCode, 1);
+				}
+			}
+		};
+	})(),
 
 	exec: {
-		'execChild is called, the return value of which is returned; options not applied'() {
+		'execChild is called, options not applied; execChild\'s value is returned'() {
 			let value = 'ls';
 
 			execStub.returns(value);
@@ -79,28 +98,52 @@ registerSuite({
 		}
 	},
 
-	promiseExec: {
-		// 'returns exec wrapped in promise, called with specified options'() {
-		// 	const command = 'ls';
-		// 	const opts = { silent: true };
-		// 	const promisifySpy = spy(process, 'promisify');
-		// 	const processExecSpy = spy(process, 'exec');
-		// 	const execPromise = module.promiseExec(command, opts);
+	promiseExec: (() => {
+		return {
+			'options not applied'() {
+				const promise = testExec();
 
-		// 	assert.instanceOf(execPromise, Promise);
-		// 	assert.isTrue(promisifySpy.calledOnce);
-		// 	assert.isTrue(processExecSpy.calledOnce);
-		// 	assert.isTrue(processExecSpy.calledWith(command, opts));
-		// },
+				assert.equal(execStub.lastCall.args[1].silent, false);
 
-		// 'sets options.silent to false if unavailable'() {
-		// 	const processExecStub = stub(module, 'exec');
+				return promise;
+			},
+			'options applied, options.silent = true'() {
+				const promise = testExec({ silent: true });
 
-		// 	module.promiseExec('not-a-command', {});
+				assert.equal(execStub.lastCall.args[1].silent, true);
 
-		// 	assert.isTrue(processExecStub.calledWith('not-a-command', { silent: false }));
-		// }
-	},
+				return promise;
+			},
+			'options applied, options.silent undefined'() {
+				const promise = testExec({});
+
+				assert.equal(execStub.lastCall.args[1].silent, false);
+
+				return promise;
+			}
+		};
+
+		async function testExec(opts?: any) {
+			const proc = {
+				stdout: { pipe: stub() },
+				stderr: { pipe: stub() },
+				on: stub()
+			};
+
+			execStub.returns(proc);
+
+			const promise = module.promiseExec('test', opts);
+
+			assert.isTrue(proc.on.called);
+			assert.instanceOf(promise, Promise);
+			assert.isTrue(proc.on.calledWith('close'));
+
+			proc.on.lastCall.args[1](0);
+			assert.equal(proc, await promise);
+
+			return promise;
+		}
+	})(),
 
 	spawn: {
 		'spawnChild is called, the return value of which is returned; options not applied'() {
@@ -130,9 +173,50 @@ registerSuite({
 		}
 	},
 
-	promiseSpawn() {
-		// stub promisify and assert called once
-		// stub spawn and assert called once
-		// assert return is wrapped in promise
-	}
+	promiseSpawn: (() => {
+		return {
+			'options not applied'() {
+				const promise = testSpawn();
+
+				assert.equal(spawnStub.lastCall.args[2].silent, false);
+
+				return promise;
+			},
+			'options applied, options.silent = true'() {
+				const promise = testSpawn({ silent: true });
+
+				assert.equal(spawnStub.lastCall.args[2].silent, true);
+
+				return promise;
+			},
+			'options applied, options.silent undefined'() {
+				const promise = testSpawn({});
+
+				assert.equal(spawnStub.lastCall.args[2].silent, false);
+
+				return promise;
+			}
+		};
+
+		async function testSpawn(opts?: any) {
+			const proc = {
+				stdout: { pipe: stub() },
+				stderr: { pipe: stub() },
+				on: stub()
+			};
+
+			spawnStub.returns(proc);
+
+			const promise = module.promiseSpawn('test', [ 'arg' ], opts);
+
+			assert.isTrue(proc.on.called);
+			assert.instanceOf(promise, Promise);
+			assert.isTrue(proc.on.calledWith('close'));
+
+			proc.on.lastCall.args[1](0);
+			assert.equal(proc, await promise);
+
+			return promise;
+		}
+	})()
 });
