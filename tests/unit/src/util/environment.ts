@@ -70,14 +70,6 @@ registerSuite({
 		assert.equal(environment.currentBranch(), expected);
 	},
 
-	decryptIvName() {
-		assert.equal(environment.decryptIvName(), 'publish_deploy_iv');
-	},
-
-	decryptKeyName() {
-		assert.equal(environment.decryptKeyName(), 'publish_deploy_key');
-	},
-
 	encryptedKeyFile: {
 		'returns ENCRYPTED_KEY_FILE'() {
 			const filename = 'keyfile';

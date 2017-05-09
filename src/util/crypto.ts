@@ -19,7 +19,7 @@ function randomUtf8(bytes: number): string {
 	return crypto.randomBytes(bytes).toString('hex').slice(0, bytes);
 }
 
-export async function createDeployKey(deployKeyFile: string = env.keyFile(), keyComment: string = 'Automated Travis Deploy Key'): Promise<KeyPairFiles> {
+export async function createKey(deployKeyFile: string = env.keyFile(), keyComment: string = 'Automated Travis Deploy Key'): Promise<KeyPairFiles> {
 	const command = `ssh-keygen -t rsa -b 4096 -C "${ keyComment }" -f ${ deployKeyFile } -N ""`;
 	const proc = exec(command, { silent: false });
 	await promisify(proc);

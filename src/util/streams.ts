@@ -13,7 +13,10 @@ export function toString(stream: Readable): Promise<string> {
 	return new Promise(function (resolve, reject) {
 		const chunks: string[] = [];
 
-		stream.on('data', function (chunk: string) {
+		stream.on('data', function (chunk: string | Buffer) {
+			if (typeof chunk !== 'string') {
+				chunk = chunk.toString();
+			}
 			chunks.push(chunk);
 		}).on('error', function (error: Error) {
 			reject(error);

@@ -10,7 +10,7 @@ registerSuite({
 
 	async createDeployKey() {
 		const tmp = tmpFile('deployKey');
-		const keys = await crypto.createDeployKey(tmp);
+		const keys = await crypto.createKey(tmp);
 
 		assert.isTrue(existsSync(keys.publicKey));
 		assert.isTrue(existsSync(keys.privateKey));

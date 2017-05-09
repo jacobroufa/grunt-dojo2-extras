@@ -1,5 +1,26 @@
 import { existsSync } from 'fs';
 import { PublishMode } from '../commands/publish';
+import { Auth } from 'github';
+
+/**
+ * the name of the environment variable holding the github authentication for API calls
+ */
+export const githubAuthName = 'GITHUB_AUTH';
+
+/**
+ * the name of the environment variable holding the decryption iv value
+ */
+export const decryptIvName = 'publish_deploy_iv';
+
+/**
+ * the name of the environment variable holding the decryption key value
+ */
+export const decryptKeyName = 'publish_deploy_key';
+
+/**
+ * the name of the environment variable holding the private key to publish to GitHub
+ */
+export const privateKeyName = 'PRIVATE_KEY';
 
 export function commitMessage(): string {
 	return process.env.TRAVIS_COMMIT_MESSAGE;
@@ -9,20 +30,6 @@ export function commitMessage(): string {
  */
 export function currentBranch(): string {
 	return process.env.TRAVIS_BRANCH;
-}
-
-/**
- * @return the environment variable name holding the decryption iv value
- */
-export function decryptIvName() {
-	return 'publish_deploy_iv';
-}
-
-/**
- * @return the environment variable name holding the decryption key value
- */
-export function decryptKeyName() {
-	return 'publish_deploy_key';
 }
 
 /**
@@ -37,6 +44,13 @@ export function encryptedKeyFile(file = keyFile()) {
  */
 export function gitCommit(): string {
 	return process.env.TRAVIS_COMMIT;
+}
+
+/**
+ * @return OAuth credentials to be used in GitHub queries
+ */
+export function githubAuth(authStr: string = process.env[githubAuthName]): Auth {
+	return authStr ? JSON.parse(authStr) : null;
 }
 
 /**

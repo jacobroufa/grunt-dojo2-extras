@@ -16,6 +16,7 @@ import { join, resolve } from 'path';
 import installDependencies from '../src/commands/installDependencies';
 import { logger } from '../src/log';
 import { makeTempDirectory } from '../src/util/file';
+import '@dojo/shim/Promise'; // TODO I don't know why I have to do this, but it fixes things.
 
 interface BaseOptions {
 	dest: string;

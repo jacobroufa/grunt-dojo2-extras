@@ -9,8 +9,8 @@ import { existsSync, createWriteStream, createReadStream } from 'fs';
  */
 export default async function decryptDeployKey(
 	encryptedFile: string = env.encryptedKeyFile(),
-	key: string = process.env[env.decryptKeyName()],
-	iv: string = process.env[env.decryptIvName()],
+	key: string = process.env[env.decryptKeyName],
+	iv: string = process.env[env.decryptIvName],
 	decryptedFile: string = env.keyFile()
 ): Promise<boolean> {
 	if (!existsSync(encryptedFile) || existsSync(decryptedFile) || !key || !iv) {
