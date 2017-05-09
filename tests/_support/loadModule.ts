@@ -6,6 +6,7 @@ declare const require: RootRequire;
 export default function loadModule<T>(mid: string, mocks: any, returnDefault: boolean = true): T {
 	mockery.enable({
 		useCleanCache: true,
+		warnOnReplace: false,
 		warnOnUnregistered: false
 	});
 	mockery.resetCache();
