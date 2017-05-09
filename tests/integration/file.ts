@@ -7,7 +7,7 @@ registerSuite({
 	name: 'file',
 
 	tempDirectory() {
-		const path = makeTempDirectory('./test');
+		const path = makeTempDirectory('.test');
 		assert.isTrue(existsSync(path));
 		assert.isTrue(statSync(path).isDirectory());
 	}

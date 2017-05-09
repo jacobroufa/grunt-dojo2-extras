@@ -12,7 +12,7 @@ function assertReject(promise: Promise<any>) {
 	});
 }
 
-function createStream(data: string): Readable {
+function createStream(data: string | Buffer): Readable {
 	const stream = new Readable();
 	stream.push(data);
 	stream.push(null);
@@ -46,6 +46,15 @@ registerSuite({
 		async 'stream is converted to a string'() {
 			const expected = 'Hello World';
 			const stream = createStream(expected);
+
+			const value = await streams.toString(stream);
+			assert.strictEqual(value, expected);
+		},
+
+		async 'stream provides buffers'() {
+			const expected = 'Hello World';
+			const data = new Buffer(expected);
+			const stream = createStream(data);
 
 			const value = await streams.toString(stream);
 			assert.strictEqual(value, expected);

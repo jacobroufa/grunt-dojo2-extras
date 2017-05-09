@@ -1,4 +1,6 @@
 import request, { Response, RequestOptions } from '@dojo/core/request';
+import GitHub, { AuthResponse } from './GitHub';
+import { logger } from '../log';
 
 function responseHandler(response: Response): Response {
 	const statusCode = response.status;
@@ -32,8 +34,10 @@ export interface FetchRepositoryResponse {
 export default class Travis {
 	token: string = null;
 
+	private githubAuthorization: AuthResponse;
+
 	async authenticate(githubToken: string): Promise<string> {
-		const response: Response = await request.post('https://api.travis-ci.org/auth/github', {
+		const response = await request.post('https://api.travis-ci.org/auth/github', {
 			body: JSON.stringify({
 				'github_token': githubToken
 			}),
@@ -45,14 +49,57 @@ export default class Travis {
 		return token;
 	}
 
+	/**
+	 * Create a temporary authorization for GitHub to use with Travis
+	 */
+	async createAuthorization(repo: GitHub) {
+		const params = {
+			note: 'temporary token for travis cli',
+			scopes: [
+				'read:org', 'user:email', 'repo_deployment', 'repo:status', 'public_repo', 'write:repo_hook'
+			]
+		};
+		const existing = await repo.findAuthorization(params);
+
+		if (existing) {
+			throw new Error(`An existing authorization exists. "#${ existing.id }"`);
+		}
+
+		this.githubAuthorization = await repo.createAuthorization(params);
+		try {
+			await this.authenticate(this.githubAuthorization.token);
+		}
+		catch (e) {
+			logger.info('Cleaning up temporary GitHub token');
+			await this.deleteAuthorization(repo);
+			throw e;
+		}
+	}
+
+	/**
+	 * delete authorization used by the GitHub repo
+	 */
+	async deleteAuthorization(repo: GitHub) {
+		if (this.githubAuthorization) {
+			await repo.deleteAuthorization(this.githubAuthorization.id);
+		}
+	}
+
 	async fetchRepository(slug: string) {
 		const endpoint = `https://api.travis-ci.org/repos/${ slug }`;
-		const response: Response = await request.get(endpoint, {
+		const response = await request.get(endpoint, {
 			headers: getHeaders(this.token)
 		}).then(responseHandler);
 
 		const body = await response.json<FetchRepositoryResponse>();
 		return new Repository(this.token, body.repo);
+	}
+
+	/**
+	 * @return if Travis has been authorized through GitHub
+	 */
+	isAuthorized() {
+		return !!this.githubAuthorization;
 	}
 }
 
@@ -62,7 +109,7 @@ export interface RepositoryData {
 	slug: string;
 }
 
-export interface EnviornmentVariable {
+export interface EnvironmentVariable {
 	id: string;
 	name: string;
 	value: string;
@@ -71,7 +118,7 @@ export interface EnviornmentVariable {
 }
 
 export interface ListEnvironmentVariablesResponse {
-	env_vars: EnviornmentVariable[];
+	env_vars: EnvironmentVariable[];
 }
 
 export class Repository {
@@ -90,9 +137,9 @@ export class Repository {
 		this.token = token;
 	}
 
-	async listEnvironmentVariables(): Promise<EnviornmentVariable[]> {
+	async listEnvironmentVariables(): Promise<EnvironmentVariable[]> {
 		const endpoint = `https://api.travis-ci.org/settings/env_vars?repository_id=${ this.id }`;
-		const response: Response = await request.get(endpoint, {
+		const response = await request.get(endpoint, {
 			headers: getHeaders(this.token)
 		}).then(responseHandler);
 
@@ -103,7 +150,7 @@ export class Repository {
 		const envvars = await this.listEnvironmentVariables();
 
 		for (let { name, value, isPublic } of variables) {
-			const match: EnviornmentVariable = (<any> envvars).find(function (envvar: EnviornmentVariable) {
+			const match: EnvironmentVariable = (<any> envvars).find(function (envvar: EnvironmentVariable) {
 				return envvar.name === name;
 			});
 
@@ -118,7 +165,7 @@ export class Repository {
 
 	private async addEnvironmentVariable(name: string, value: string, isPublic = false): Promise<Repository> {
 		const endpoint = `https://api.travis-ci.org/settings/env_vars?repository_id=${ this.id }`;
-		const response: Response = await request.post(endpoint, {
+		const response = await request.post(endpoint, {
 			body: JSON.stringify({
 				'env_var': {
 					name,
@@ -134,7 +181,7 @@ export class Repository {
 
 	private async updateEnvironmentVariable(id: string, name: string, value: string, isPublic = false): Promise<Repository> {
 		const endpoint = `https://api.travis-ci.org/settings/env_vars/${ id }?repository_id=${ this.id }`;
-		const response: Response = await request(endpoint, {
+		const response = await request(endpoint, {
 			body: JSON.stringify({
 				'env_var': {
 					name,

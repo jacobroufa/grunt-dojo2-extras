@@ -63,15 +63,6 @@ export const copy = {
 	}
 };
 
-export const initAutomation = {
-	repo: {
-		options: {
-			repoOwner: '<%= repoOwner %>',
-			repoName: '<%= repoName %>'
-		}
-	}
-};
-
 export const intern = {
 	options: {
 		runType: 'client',
@@ -123,6 +114,14 @@ export const publish = {
 			cloneDirectory: '<%= cloneDirectory %>'
 		}
 	}
+};
+
+export const setupAuth = {
+	repo: { }
+};
+
+export const setupDeploy = {
+	repo: { }
 };
 
 export const shell = {

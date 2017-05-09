@@ -23,7 +23,8 @@ export = function (grunt: IGrunt) {
 	grunt.registerTask('test', [ 'dev', 'intern' ]);
 	grunt.registerTask('unit', [ 'dev', 'intern:unit' ]);
 	grunt.registerTask('integration', [ 'dev', 'intern:integration' ]);
-	grunt.registerTask('init', [ 'prompt:github', 'initAutomation' ]);
+	grunt.registerTask('init:deploy', [ 'prompt:github', 'setupDeploy' ]);
+	grunt.registerTask('init:auth', [ 'prompt:github', 'setupAuth' ]);
 	grunt.registerTask('cd-latest', [ 'prebuild', 'sync:latest', 'clean:repo', 'copy:latest', 'publish:latest' ]);
 	grunt.registerTask('cd-api', [ 'prebuild', 'sync:gh-pages', 'clean:repo', 'api', 'copy:gh-pages', 'publish:gh-pages' ]);
 };

@@ -1,8 +1,6 @@
-import request, { responseHandler } from './request';
-import { hasGitCredentials } from './environment';
-import { readFileSync } from 'fs';
-import { Response } from '@dojo/core/request';
-import { RequestOptions } from '@dojo/core/request/interfaces';
+import { githubAuth, hasGitCredentials } from './environment';
+import * as GitHubApi from 'github';
+import { AuthorizationCreateParams } from 'github';
 
 export interface Release {
 	name: string;
@@ -12,28 +10,31 @@ export interface Release {
 	};
 }
 
-const API_URL = 'https://api.github.com';
-
-export interface Options {
-	password?: string;
-	username?: string;
-}
-
 export interface AuthResponse {
 	id: number;
 	token: string;
+	note: string;
+	fingerprint: string;
 }
+
+/**
+ * GitHub OAuth scopes define permissions granted to a specific token
+ */
+export type OAuthScope = 'user' | 'user:email' | 'user:follow' | 'public_repo' | 'repo' | 'repo_deployment' |
+	'repo:status' | 'delete_repo' | 'notifications' | 'gist' | 'read:repo_hook' | 'write:repo_hook' |
+	'admin:repo_hook' | 'admin:org_hook' | 'read:org' | 'write:org' | 'admin:org' | 'read:public_key' |
+	'write:public_key' | 'admin:public_key' | 'read:gpg_key' | 'write:gpg_key' | 'admin:gpg_key';
 
 export default class GitHub {
 	name: string;
 
 	owner: string;
 
-	password: string;
+	readonly _api: GitHubApi;
 
-	username: string;
+	private authed = false;
 
-	constructor(owner: string, name: string, options: Options = {}) {
+	constructor(owner: string, name: string) {
 		if (!owner) {
 			throw new Error('A repo owner must be specified');
 		}
@@ -41,71 +42,112 @@ export default class GitHub {
 			throw new Error('A repo name must be specified');
 		}
 
+		this._api = new GitHubApi({
+			headers: {
+				'user-agent': 'grunt-dojo2-extras'
+			},
+			Promise
+		});
+
 		this.owner = owner;
 		this.name = name;
-		this.authenticate(options.username, options.password);
+	}
+
+	get api(): GitHubApi {
+		this.isApiAuthenticated();
+		return this._api;
 	}
 
 	get url(): string {
 		return hasGitCredentials() ? this.getSshUrl() : this.getHttpsUrl();
 	}
 
-	async createAuthorizationToken(note: string = '', scopes: string[] = [
-		'read:org', 'user:email', 'repo_deployment', 'repo:status', 'public_repo', 'write:repo_hook'
-	]): Promise<AuthResponse> {
-		this.assertAuthentication();
-		const endpoint = `https://api.github.com/authorizations`;
-		const options: RequestOptions = {
-			body: JSON.stringify({
-				scopes,
-				note
-			}),
-			password: this.password,
-			user: this.username
-		};
-		return request.post(endpoint, options)
-			.then(responseHandler)
-			.then(response => response.json<AuthResponse>());
+	async createAuthorization(params: AuthorizationCreateParams): Promise<AuthResponse> {
+		const response = await this.api.authorization.create(params);
+		return response.data;
 	}
 
-	async removeAuthorizationToken(id: string | number): Promise<Response> {
-		const endpoint = `https://api.github.com/authorizations/${ id }`;
-		return request.delete(endpoint, {
-			password: this.password,
-			user: this.username
-		}).then(responseHandler);
+	async createKey(key: string): Promise<any> {
+		const reponse = await this.api.repos.createKey({
+			key,
+			owner: this.owner,
+			read_only: false,
+			repo: this.name,
+			title: 'Auto-created Travis Deploy Key'
+		});
+		return reponse.data;
 	}
 
-	addDeployKey(keyfile: string, title: string, readOnly: boolean = true): Promise<any> {
-		this.assertAuthentication();
-		const endpoint = `https://api.github.com/repos/${ this.owner }/${ this.name }/keys`;
-		const key = readFileSync(keyfile, { encoding: 'utf8' });
-		return request.post(endpoint, {
-			body: JSON.stringify({
-				title,
-				key,
-				read_only: readOnly
-			}),
-			password: this.password,
-			user: this.username
-		}).then(responseHandler)
-		.then(response => response.json());
+	async deleteAuthorization(id: string | number) {
+		return this.api.authorization.delete({
+			id: String(id)
+		});
 	}
 
-	authenticate(username: string, password: string) {
-		this.username = username;
-		this.password = password;
+	async deleteKey(id: string | number) {
+		return this.api.repos.deleteKey({
+			id: String(id),
+			owner: this.owner,
+			repo: this.name
+		});
+	}
+
+	async fetchReleases(): Promise<Release[]> {
+		const response = await this.api.repos.getReleases({
+			owner: this.owner,
+			repo: this.name
+		});
+		return response.data;
 	}
 
 	/**
-	 * @return {Promise<Release[]>} a list of releases
+	 * Find an authorization that matches the supplied params.
+	 * NOTE: the token value will be unavailable and is only available on creation
+	 * @param params search params to match for the authorization
 	 */
-	fetchReleases(): Promise<Release[]> {
-		const url = `${ API_URL }/repos/${ this.owner }/${ this.name }/tags`;
+	async findAuthorization(params: AuthorizationCreateParams): Promise<AuthResponse> {
+		const response = await this.api.authorization.getAll({
+			page: 1
+		});
+		const auths: AuthResponse[] = response.data || [];
+		return auths.filter(function (auth: AuthResponse) {
+			for (const name in params) {
+				const expected = (<any> params)[name];
+				const actual = (<any> auth)[name];
+				if (Array.isArray(expected)) {
+					if (!Array.isArray(actual)) {
+						return false;
+					}
+					for (const value of expected) {
+						if (actual.indexOf(value) === -1) {
+							return false;
+						}
+					}
+				}
+				else if (expected !== actual) {
+					return false;
+				}
+			}
 
-		return request(url)
-			.then(responseHandler)
-			.then(response => response.json<Release[]>());
+			return true;
+		})[0];
+	}
+
+	/**
+	 * Report if the API has been authenticated with an OAuth token. API calls that have not been authenticated are
+	 * subject to stricter rate-limits
+	 * @return if the API has an OAuth token
+	 */
+	isApiAuthenticated() {
+		if (!this.authed) {
+			const auth = githubAuth();
+
+			if (auth) {
+				this._api.authenticate(auth);
+			}
+			this.authed = true;
+		}
+		return !!(<any> this._api).auth;
 	}
 
 	getHttpsUrl() {
@@ -118,14 +160,5 @@ export default class GitHub {
 
 	toString() {
 		return `${ this.owner }/${ this.name }`;
-	}
-
-	private assertAuthentication() {
-		if (!this.username) {
-			throw new Error('Username must be provided');
-		}
-		if (!this.password) {
-			throw new Error('Password must be provided');
-		}
 	}
 }

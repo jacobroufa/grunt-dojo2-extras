@@ -42,16 +42,18 @@
     "typescript": "^2.2.2"
   },
   "dependencies": {
-    "@dojo/core": "^2.0.0-beta1.3",
-    "@dojo/has": "^2.0.0-beta1.1",
-    "@dojo/interfaces": "^2.0.0-beta1.1",
-    "@dojo/shim": "^2.0.0-beta1.1",
+    "@dojo/core": "beta1",
+    "@dojo/has": "beta1",
+    "@dojo/interfaces": "beta1",
+    "@dojo/shim": "beta1",
     "@types/grunt": "^0.4.21",
     "@types/mkdirp": "^0.3.29",
     "@types/semver": "^5.3.31",
     "@types/winston": "^2.3.1",
+    "github": "^9.2.0",
     "mkdirp": "^0.5.1",
     "semver": "^5.3.0",
+    "travis-ci": "^2.1.1",
     "tslib": "^1.6.1",
     "typedoc": "^0.5.10",
     "winston": "^2.3.1"
