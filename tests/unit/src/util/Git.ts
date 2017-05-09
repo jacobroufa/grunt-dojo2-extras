@@ -97,7 +97,7 @@ registerSuite({
 			assert.strictEqual(error.message,
 				'Repository mismatch. Expected "url" to be "other_url".');
 		});
-		assert.doesNotThrow(() => git.assert('url'));
+		return git.assert('url');
 	},
 
 	async checkout() {
@@ -115,7 +115,7 @@ registerSuite({
 	clone: {
 		'If clone directory is not set; eventually rejects'() {
 			delete git.cloneDirectory;
-			git.clone('url').then(() => assert.fail(), (error: Error) => {
+			return git.clone('url').then(() => assert.fail(), (error: Error) => {
 				assert.equal(error.message,
 					'A clone directory must be set');
 			});
