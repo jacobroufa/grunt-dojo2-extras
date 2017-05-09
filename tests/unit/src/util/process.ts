@@ -36,15 +36,23 @@ registerSuite({
 	},
 
 	promisify: (() => {
-		const proc = {
-			stdout: { pipe: stub() },
-			stderr: { pipe: stub() },
-			on: stub()
-		};
-
-		stub(processUtil, 'exec').returns(proc);
+		let proc: any;
 
 		return {
+			beforeEach() {
+				proc = {
+					stdout: { pipe: stub() },
+					stderr: { pipe: stub() },
+					on: stub()
+				};
+
+				stub(processUtil, 'exec').returns(proc);
+			},
+
+			afterEach() {
+				(<SinonStub> processUtil.exec).restore();
+			},
+
 			async 'eventually resolves the returned promise'() {
 				const promise = processUtil.promisify(processUtil.exec('test'));
 
