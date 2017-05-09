@@ -6,7 +6,7 @@ import { stub, SinonStub } from 'sinon';
 let module: any;
 let existsSyncStub: SinonStub;
 let mkdtempSyncStub: SinonStub;
-let syncStub: SinonStub;
+let mkdirpSyncStub: SinonStub;
 let joinStub: SinonStub;
 
 registerSuite({
@@ -15,7 +15,7 @@ registerSuite({
 	before() {
 		existsSyncStub = stub();
 		mkdtempSyncStub = stub();
-		syncStub = stub();
+		mkdirpSyncStub = stub();
 		joinStub = stub();
 	},
 
@@ -30,7 +30,7 @@ registerSuite({
 				mkdtempSync: mkdtempSyncStub
 			},
 			'mkdirp': {
-				sync: syncStub
+				sync: mkdirpSyncStub
 			},
 			'path': {
 				join: joinStub
@@ -41,21 +41,21 @@ registerSuite({
 	afterEach() {
 		existsSyncStub.reset();
 		mkdtempSyncStub.reset();
-		syncStub.reset();
+		mkdirpSyncStub.reset();
 		joinStub.reset();
 	},
 
 	makeTempDirectory: {
-		'base directory should be created if it does not exist'() {
+		'base directory does not exist; directory is created'() {
 			existsSyncStub.returns(false);
 
 			module.makeTempDirectory('dir');
 
 			assert.isTrue(existsSyncStub.calledOnce);
-			assert.isTrue(syncStub.calledOnce);
+			assert.isTrue(mkdirpSyncStub.calledOnce);
 		},
 
-		'prefix should default to "tmp-" if not provided'() {
+		'prefix not provided; defaults to "tmp-"'() {
 			existsSyncStub.returns(true);
 
 			module.makeTempDirectory('dir');
@@ -63,7 +63,7 @@ registerSuite({
 			assert.isTrue(joinStub.calledWith('dir', 'tmp-'));
 		},
 
-		'value of mkdtempSync should be returned'() {
+		'value of mkdtempSync is returned'() {
 			existsSyncStub.returns(true);
 			mkdtempSyncStub.returns('temp_dir');
 
