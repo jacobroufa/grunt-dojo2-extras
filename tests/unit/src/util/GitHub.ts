@@ -224,11 +224,11 @@ registerSuite({
 			// 		branch expected !== actual
 			'api.authorization.getAll returns array of data': {
 				async 'getAll response data contain an array similar to params array member'() {
-					authorizationGetAllStub.returns({ data: [ scope ] });
+					authorizationGetAllStub.returns({ data: [ findAuthParams ] });
 
-					const AuthGetAll = await assertAuthGetAllCalled(findAuthParams);
+					const AuthGetAll = await assertAuthGetAllCalled(scope);
 
-					assert.strictEqual(AuthGetAll, scope);
+					assert.strictEqual(AuthGetAll, findAuthParams);
 				},
 
 				async 'getAll response data do not contain an array'() {
@@ -240,11 +240,11 @@ registerSuite({
 				},
 
 				async 'findAuthorization params contain no array'() {
-					authorizationGetAllStub.returns({ data: [ note.note ] });
+					authorizationGetAllStub.returns({ data: [ findAuthParams ] });
 
-					const AuthGetAll = await assertAuthGetAllCalled(findAuthParams);
+					const AuthGetAll = await assertAuthGetAllCalled(note);
 
-					assert.strictEqual(AuthGetAll, note);
+					assert.strictEqual(AuthGetAll, findAuthParams);
 				}
 			}
 		};
