@@ -1,10 +1,11 @@
 import * as registerSuite from 'intern!object';
 import * as assert from 'intern/chai!assert';
 import loadModule, { cleanupModuleMocks } from '../../../_support/loadModule';
-import { stub, SinonStub } from 'sinon';
+import { spy, stub, SinonSpy, SinonStub } from 'sinon';
 
-let module: any;
-let GitStub: SinonStub;
+let sync: any;
+let GitSpy: SinonSpy;
+let checkoutStub: SinonStub;
 let isInitializedStub: SinonStub;
 
 const syncOptions = {
@@ -17,16 +18,20 @@ registerSuite({
 	name: 'commands/sync',
 
 	before() {
+		checkoutStub = stub();
 		isInitializedStub = stub();
-		GitStub = stub().returns({
-			ensureConfig: stub(),
-			isInitialized: isInitializedStub,
-			assert: stub(),
-			clone: stub(),
-			checkout: stub(),
-			pull: stub(),
-			createOrphan: stub()
-		});
+
+		const Git = class {
+			assert: SinonStub = stub();
+			checkout: SinonStub = checkoutStub;
+			clone: SinonStub = stub();
+			createOrphan: SinonStub = stub();
+			ensureConfig: SinonStub = stub();
+			isInitialized: SinonStub = isInitializedStub;
+			pull: SinonStub = stub();
+		};
+
+		GitSpy = spy(Git);
 	},
 
 	after() {
@@ -34,29 +39,64 @@ registerSuite({
 	},
 
 	beforeEach() {
-		module = loadModule('src/commands/sync', {
-			Git: GitStub
+		sync = loadModule('src/commands/sync', {
+			'../util/Git': { default: GitSpy }
 		});
 	},
 
 	afterEach() {
-		GitStub.reset();
+		GitSpy.reset();
+		checkoutStub.reset();
 		isInitializedStub.reset();
 	},
 
-	sync: {
-		async 'Git initialized'() {
-			isInitializedStub.returns(true);
-			await module.sync(syncOptions);
+	sync: (() => {
+		return {
+			async 'Git initialized; checkout eventually resolves'() {
+				checkoutStub.returns(Promise.resolve('master'));
+				isInitializedStub.returns(true);
 
-			assert.isTrue(GitStub.calledOnce);
-		},
+				await assertSync();
 
-		async 'Git not initialized'() {
-			isInitializedStub.returns(false);
-			await module.sync(syncOptions);
+				const git = GitSpy.lastCall.returnValue;
 
-			assert.isTrue(GitStub.calledOnce);
+				assert.isTrue(git.assert.calledOnce);
+				assert.isTrue(git.pull.calledOnce);
+			},
+
+			async 'Git not initialized; checkout eventually resolves'() {
+				checkoutStub.returns(Promise.resolve());
+				isInitializedStub.returns(false);
+
+				await assertSync();
+
+				const git = GitSpy.lastCall.returnValue;
+
+				assert.isTrue(git.clone.calledOnce);
+				assert.isTrue(git.pull.calledOnce);
+			},
+
+			async 'Git checkout eventually rejects'() {
+				checkoutStub.returns(Promise.reject());
+				isInitializedStub.returns(true);
+
+				await assertSync();
+
+				const git = GitSpy.lastCall.returnValue;
+
+				assert.isTrue(git.createOrphan.calledOnce);
+			}
+		};
+
+		async function assertSync() {
+			await sync(syncOptions);
+
+			const git = GitSpy.lastCall.returnValue;
+
+			assert.isTrue(GitSpy.calledOnce);
+			assert.isTrue(git.ensureConfig.calledOnce);
+			assert.isTrue(git.isInitialized.calledOnce);
+			assert.isTrue(git.checkout.calledOnce);
 		}
-	}
+	})()
 });
