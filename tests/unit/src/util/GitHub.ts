@@ -1,24 +1,37 @@
 import * as registerSuite from 'intern!object';
 import * as assert from 'intern/chai!assert';
 import loadModule, { cleanupModuleMocks } from '../../../_support/loadModule';
-import { stub, SinonStub } from 'sinon';
+import { spy, stub, SinonSpy, SinonStub } from 'sinon';
 import GitHub from 'src/util/GitHub';
 
 let Module: any;
 let github: GitHub;
 let githubAuthStub: SinonStub;
 let hasGitCredentialsStub: SinonStub;
-let GitHubApiStub: SinonStub;
-let AuthorizationCreateParamsStub: SinonStub;
+let GitHubApiSpy: SinonSpy;
 
 registerSuite({
-	name: 'util/Git',
+	name: 'util/GitHub',
 
 	before() {
+		const GitHubApi = class {
+			authenticate: SinonStub = stub();
+			authorization = {
+				create: stub(),
+				delete: stub(),
+				getAll: stub()
+			};
+			AuthorizationCreateParams: SinonStub = stub();
+			repos = {
+				createKey: stub(),
+				deleteKey: stub(),
+				getReleases: stub()
+			};
+		};
+
 		githubAuthStub = stub();
 		hasGitCredentialsStub = stub();
-		GitHubApiStub = stub();
-		AuthorizationCreateParamsStub = stub();
+		GitHubApiSpy = spy(GitHubApi);
 	},
 
 	after() {
@@ -31,38 +44,85 @@ registerSuite({
 				githubAuth: githubAuthStub,
 				hasGitCredentials: hasGitCredentialsStub
 			},
-			'github': {
-				'*': GitHubApiStub,
-				AuthorizationCreateParams: AuthorizationCreateParamsStub
-			}
+			'github': GitHubApiSpy
 		});
 
-		github = new Module();
+		github = new Module('dojo', 'grunt-dojo2-extras');
 	},
 
 	afterEach() {
 		githubAuthStub.reset();
 		hasGitCredentialsStub.reset();
-		GitHubApiStub.reset();
-		AuthorizationCreateParamsStub.reset();
+		GitHubApiSpy.reset();
 	},
 
 	'constructor': {
 		'without owner; throws Error'() {
+			try {
+				new Module();
+			} catch (e) {
+				assert.equal(e.message, 'A repo owner must be specified');
+			}
 		},
 
 		'without name; throws Error'() {
+			try {
+				new Module('dojo');
+			} catch (e) {
+				assert.equal(e.message, 'A repo name must be specified');
+			}
 		},
 
 		'properly initialized; _api, owner, and name set'() {
+			assert.isTrue(GitHubApiSpy.calledOnce);
+			assert.strictEqual(github.owner, 'dojo');
+			assert.strictEqual(github.name, 'grunt-dojo2-extras');
 		}
 	},
 
 	'get api'() {
+		github.isApiAuthenticated = stub();
+
+		const api = github.api;
+
+		assert.strictEqual(api, github._api);
 	},
 
-	'get url'() {
-	},
+	'get url': (() => {
+		return {
+			'has git credentials; returns ssh url'() {
+				const getSshUrl = stub(github, 'getSshUrl');
+
+				hasGitCredentialsStub.returns(true);
+
+				assertCredentials();
+
+				assert.isTrue(getSshUrl.calledOnce);
+
+				getSshUrl.reset();
+			},
+
+			'doesn\'t have git credentials; returns https url'() {
+				const getHttpsUrl = stub(github, 'getHttpsUrl');
+
+				hasGitCredentialsStub.returns(false);
+
+				assertCredentials();
+
+				assert.isTrue(getHttpsUrl.calledOnce);
+
+				getHttpsUrl.reset();
+			}
+		};
+
+		function assertCredentials() {
+			const url = github.url;
+
+			assert.isTrue(hasGitCredentialsStub.calledOnce);
+
+			return url;
+		}
+	})(),
 
 	async createAuthorization() {
 	},
