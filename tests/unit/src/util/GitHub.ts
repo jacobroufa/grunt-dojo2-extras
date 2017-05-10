@@ -17,15 +17,14 @@ registerSuite({
 		const GitHubApi = class {
 			authenticate: SinonStub = stub();
 			authorization = {
-				create: stub(),
+				create: stub().returns({ data: 'create' }),
 				delete: stub(),
 				getAll: stub()
 			};
-			AuthorizationCreateParams: SinonStub = stub();
 			repos = {
-				createKey: stub(),
+				createKey: stub().returns({ data: 'createKey' }),
 				deleteKey: stub(),
-				getReleases: stub()
+				getReleases: stub().returns({ data: 'getReleases' })
 			};
 		};
 
@@ -125,9 +124,17 @@ registerSuite({
 	})(),
 
 	async createAuthorization() {
+		const createAuth = await github.createAuthorization({});
+
+		assert.strictEqual(createAuth, 'create');
 	},
 
 	async createKey() {
+		const createKey = await github.createKey('key');
+		const api = GitHubApiSpy.lastCall.returnValue;
+
+		assert.strictEqual(createKey, 'createKey');
+		assert.strictEqual(api.repos.createKey.lastCall.args[0].key, 'key');
 	},
 
 	async deleteAuthorization() {
@@ -146,11 +153,20 @@ registerSuite({
 	},
 
 	getHttpsUrl() {
+		const getHttpsUrl = github.getHttpsUrl();
+
+		assert.strictEqual(getHttpsUrl, 'https://github.com/dojo/grunt-dojo2-extras.git');
 	},
 
 	getSshUrl() {
+		const getSshUrl = github.getSshUrl();
+
+		assert.strictEqual(getSshUrl, 'git@github.com:dojo/grunt-dojo2-extras.git');
 	},
 
 	toString() {
+		const toString = github.toString();
+
+		assert.strictEqual(toString, 'dojo/grunt-dojo2-extras');
 	}
 });
