@@ -160,6 +160,8 @@ registerSuite({
 
 				try {
 					await assertInitAuthorization();
+
+					assert.fail();
 				} catch (e) {
 					assert.isTrue(repoDeleteAuthorizationStub.calledOnce);
 				}
