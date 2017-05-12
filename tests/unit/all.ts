@@ -1,5 +1,6 @@
 import './src/log';
 import './src/commands/getReleases';
+import './src/commands/initialize/initAuthorization';
 import './src/util/crypto';
 import './src/util/streams';
 import './src/util/environment';
