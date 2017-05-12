@@ -27,21 +27,16 @@ registerSuite({
 
 	before() {
 		isAuthorizedStub = stub();
-		travisCreateAuthorizationStub = stub().returns(Promise.resolve());
-		travisDeleteAuthorizationStub = stub().returns(Promise.resolve());
-		listEnvironmentVariablesStub = stub().returns(Promise.resolve([]));
-		setEnvironmentVariablesStub = stub().returns(Promise.resolve());
-		fetchRepositoryStub = stub().returns(Promise.resolve({
-			listEnvironmentVariables: listEnvironmentVariablesStub,
-			setEnvironmentVariables: setEnvironmentVariablesStub
-		}));
+		travisCreateAuthorizationStub = stub();
+		travisDeleteAuthorizationStub = stub();
+		listEnvironmentVariablesStub = stub();
+		setEnvironmentVariablesStub = stub();
+		fetchRepositoryStub = stub();
 		authenticateStub = stub();
-		getRateLimitStub = stub().returns(Promise.resolve());
+		getRateLimitStub = stub();
 		toStringStub = stub();
-		repoCreateAuthorizationStub = stub().returns(Promise.resolve({
-			token: 'token'
-		}));
-		repoDeleteAuthorizationStub = stub().returns(Promise.resolve());
+		repoCreateAuthorizationStub = stub();
+		repoDeleteAuthorizationStub = stub();
 		findStub = stub();
 		githubAuthStub = stub();
 
@@ -77,6 +72,18 @@ registerSuite({
 	},
 
 	beforeEach() {
+		travisCreateAuthorizationStub.returns(Promise.resolve());
+		travisDeleteAuthorizationStub.returns(Promise.resolve());
+		fetchRepositoryStub.returns(Promise.resolve({
+			listEnvironmentVariables: listEnvironmentVariablesStub.returns(Promise.resolve([])),
+			setEnvironmentVariables: setEnvironmentVariablesStub.returns(Promise.resolve())
+		}));
+		getRateLimitStub.returns(Promise.resolve());
+		repoCreateAuthorizationStub.returns(Promise.resolve({
+			token: 'token'
+		}));
+		repoDeleteAuthorizationStub.returns(Promise.resolve());
+
 		initAuthorization = loadModule('src/commands/initialize/initAuthorization', {
 			'../../util/Travis': { default: TravisSpy },
 			'../../util/GitHub': { default: GitHubSpy },
