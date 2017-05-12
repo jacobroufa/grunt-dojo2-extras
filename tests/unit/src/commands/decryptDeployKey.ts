@@ -17,10 +17,12 @@ registerSuite({
 
 	before() {
 		decryptDataObj = {
-			on: stub().returns(decryptDataObj),
-			pipe: stub().returns(decryptDataObj)
+			on: stub(),
+			pipe: stub()
 		};
 		decryptDataStub = stub().returns(decryptDataObj);
+		decryptDataObj.on.returns(decryptDataObj);
+		decryptDataObj.pipe.returns(decryptDataObj);
 		encryptedKeyFileStub = stub();
 		keyFileStub = stub();
 		existsSyncStub = stub();
