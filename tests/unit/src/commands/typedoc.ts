@@ -30,8 +30,12 @@ registerSuite({
 		const Typedoc = class {
 			bootstrapResult: any = { inputFiles: 'inputFiles' };
 			expandInputFiles: SinonStub = expandInputFilesStub;
-			generateDocs: SinonStub = generateDocsStub;
-			generateJson: SinonStub = generateJsonStub;
+			generateDocs(project: any, out: any) {
+				return generateDocsStub(project, out);
+			}
+			generateJson(project: any, out: any) {
+				return generateJsonStub(project, out);
+			}
 		};
 
 		TypedocSpy = spy(Typedoc);
@@ -99,7 +103,7 @@ registerSuite({
 
 				await assertTypedoc('source', 'target.json', { tsconfig: true });
 
-				// assert.isTrue(dirnameStub.calledOnce);
+				assert.isTrue(dirnameStub.calledOnce);
 				assert.isTrue(generateJsonStub.calledOnce);
 			},
 
@@ -118,7 +122,7 @@ registerSuite({
 			assert.isTrue(TypedocSpy.calledOnce);
 			assert.isTrue(expandInputFilesStub.calledOnce);
 			assert.isTrue(extnameStub.calledOnce);
-			// assert.isTrue(mkdirpStub.calledOnce);
+			assert.isTrue(mkdirpStub.calledOnce);
 		}
 	})()
 });
