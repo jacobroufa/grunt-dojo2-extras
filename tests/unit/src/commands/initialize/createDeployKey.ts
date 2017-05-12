@@ -20,25 +20,18 @@ registerSuite({
 
 	before() {
 		encryptedStub = {
-			pipe: stub().returns(encryptedStub),
-			on: stub().returns(encryptedStub)
+			pipe: stub(),
+			on: stub()
 		};
 		keyFileStub = stub();
 		encryptedKeyFileStub = stub();
 		existsSyncStub = stub();
 		createReadStreamStub = stub();
 		createWriteStreamStub = stub();
-		createKeyStub = stub().returns(Promise.resolve({
-			privateKey: 'privateKey',
-			publicKey: 'publicKey'
-		}));
-		encryptDataStub = stub().returns({
-			key: 'encrypt data key',
-			iv: 'encrypt data iv',
-			encrypted: encryptedStub
-		});
+		createKeyStub = stub();
+		encryptDataStub = stub();
 		decryptDataStub = stub();
-		equalStub = stub().returns(Promise.resolve());
+		equalStub = stub();
 	},
 
 	after() {
@@ -46,10 +39,13 @@ registerSuite({
 	},
 
 	beforeEach() {
+		encryptedStub.pipe.returns(encryptedStub);
+		encryptedStub.on.returns(encryptedStub).yields();
+
 		createDeployKey = loadModule('src/commands/initialize/createDeployKey', {
 			'../../util/environment': {
-				keyFile: keyFileStub,
-				encryptedKeyFile: encryptedKeyFileStub
+				keyFile: keyFileStub.returns('keyFileStub'),
+				encryptedKeyFile: encryptedKeyFileStub.returns('encryptedKeyFileStub')
 			},
 			'fs': {
 				existsSync: existsSyncStub,
@@ -57,12 +53,19 @@ registerSuite({
 				createWriteStream: createWriteStreamStub
 			},
 			'../../util/crypto': {
-				createKey: createKeyStub,
-				encryptData: encryptDataStub,
+				createKey: createKeyStub.returns(Promise.resolve({
+					privateKey: 'privateKey',
+					publicKey: 'publicKey'
+				})),
+				encryptData: encryptDataStub.returns({
+					key: 'encrypt data key',
+					iv: 'encrypt data iv',
+					encrypted: encryptedStub
+				}),
 				decryptData: decryptDataStub
 			},
 			'../../util/streams': {
-				equal: equalStub
+				equal: equalStub.returns(Promise.resolve())
 			}
 		});
 	},
@@ -79,7 +82,7 @@ registerSuite({
 		equalStub.reset();
 	},
 
-	'unit under test': (() => {
+	'createDeployKey': (() => {
 		return {
 			async 'with explicit arguments passed in'() {
 				await assertDeployKey('deploykey.file', 'deploykey.enc');
