@@ -20,14 +20,12 @@ registerSuite({
 			on: stub(),
 			pipe: stub()
 		};
-		decryptDataStub = stub().returns(decryptDataObj);
-		decryptDataObj.on.returns(decryptDataObj);
-		decryptDataObj.pipe.returns(decryptDataObj);
+		decryptDataStub = stub();
 		encryptedKeyFileStub = stub();
 		keyFileStub = stub();
 		existsSyncStub = stub();
-		createWriteStreamStub = stub().returns('writeStream');
-		createReadStreamStub = stub().returns('readStream');
+		createWriteStreamStub = stub();
+		createReadStreamStub = stub();
 	},
 
 	after() {
@@ -35,22 +33,23 @@ registerSuite({
 	},
 
 	beforeEach() {
+		decryptDataObj.on.returns(decryptDataObj);
+		decryptDataObj.pipe.returns(decryptDataObj);
+
 		decryptDeployKey = loadModule('src/commands/decryptDeployKey', {
 			'../util/crypto': {
-				decryptData: decryptDataStub
+				decryptData: decryptDataStub.returns(decryptDataObj)
 			},
 			'../util/environment': {
-				env: {
-					decryptKeyName: 'decryptKeyName',
-					decryptIvName: 'decryptIvName',
-					encryptedKeyFile: encryptedKeyFileStub,
-					keyFile: keyFileStub
-				}
+				decryptKeyName: 'decryptKeyName',
+				decryptIvName: 'decryptIvName',
+				encryptedKeyFile: encryptedKeyFileStub.returns('encryptedKeyFile'),
+				keyFile: keyFileStub.returns('keyFile')
 			},
 			'fs': {
 				existsSync: existsSyncStub,
-				createWriteStream: createWriteStreamStub,
-				createReadStream: createReadStreamStub
+				createWriteStream: createWriteStreamStub.returns('writeStream'),
+				createReadStream: createReadStreamStub.returns('readStream')
 			}
 		});
 	},
@@ -66,39 +65,69 @@ registerSuite({
 		decryptDataObj.pipe.reset();
 	},
 
-	'decryptDeployKey': {
-		async 'arguments passed in explicitly'() {
+	'decryptDeployKey': (() => {
+		return {
+			async 'arguments passed in explicitly'() {
+				ensureDecryptionResolves();
+
+				const deployKeyDecrypted = await assertDecryptDeployKey('encrypted.file', 'decrypt key', 'decrypt iv', 'decrypted.file');
+
+				assert.isTrue(deployKeyDecrypted);
+
+				assert.isTrue(encryptedKeyFileStub.notCalled);
+				assert.isTrue(keyFileStub.notCalled);
+
+				assert.isTrue(createReadStreamStub.calledOnce);
+				assert.isTrue(createWriteStreamStub.calledOnce);
+				assert.isTrue(decryptDataStub.calledOnce);
+				assert.isTrue(decryptDataStub.calledWith('readStream', 'decrypt key', 'decrypt iv'));
+			},
+
+			async 'arguments obtained from default'() {
+				ensureDecryptionResolves();
+
+				const deployKeyDecrypted = await assertDecryptDeployKey();
+
+				assert.isTrue(deployKeyDecrypted);
+				assert.isTrue(existsSyncStub.calledTwice);
+			},
+
+			async 'nonexistent files and falsy arguments; eventually returns false'() {
+				existsSyncStub.returns(false);
+
+				assert.isFalse(await assertDecryptDeployKey());
+			},
+
+			async 'decryption eventually rejects'() {
+				existsSyncStub.onCall(0).returns(true);
+				existsSyncStub.onCall(1).returns(false);
+				decryptDataObj.on.withArgs('error').yields(new Error('error'));
+
+				try {
+					await assertDecryptDeployKey();
+
+					assert.fail();
+				} catch (err) {
+					assert.strictEqual(err.message, 'error');
+				}
+			}
+		};
+
+		function ensureDecryptionResolves() {
 			existsSyncStub.onCall(0).returns(true);
 			existsSyncStub.onCall(1).returns(false);
 			decryptDataObj.on.withArgs('close').yields();
+		}
 
-			const promise = decryptDeployKey('encrypted.file', 'decrypt key', 'decrypt iv', 'decrypted.file');
+		async function assertDecryptDeployKey(encryptedFile?: any, key?: any, iv?: any, decryptedFile?: any) {
+			process.env.decryptKeyName = 'decryptKeyName';
+			process.env.decryptIvName = 'decryptIvName';
 
-			assert.isTrue(encryptedKeyFileStub.notCalled);
-			assert.isTrue(keyFileStub.notCalled);
-			assert.isTrue(existsSyncStub.calledTwice);
+			const promise = decryptDeployKey(encryptedFile, key, iv, decryptedFile);
+
 			assert.instanceOf(promise, Promise);
 
-			assert.isTrue(await promise);
-
-			assert.isTrue(createReadStreamStub.calledOnce);
-			assert.isTrue(createWriteStreamStub.calledOnce);
-			assert.isTrue(decryptDataStub.calledOnce);
-			assert.isTrue(decryptDataStub.calledWith('readStream', 'decrypt key', 'decrypt iv'));
-
 			return promise;
-		},
-
-		'arguments obtained from default'() {
-		},
-
-		'nonexistent files and falsy arguments; eventually returns false'() {
-		},
-
-		'decryption eventually rejects'() {
-		},
-
-		'decryption eventually resolves'() {
 		}
-	}
+	})()
 });
