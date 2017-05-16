@@ -19,6 +19,10 @@ let isAuthorizedStub: SinonStub;
 let travisCreateAuthorizationStub: SinonStub;
 let travisDeleteAuthorizationStub: SinonStub;
 let fetchRepositoryStub: SinonStub;
+let listEnvironmentVariablesStub: SinonStub;
+let setEnvironmentVariablesStub: SinonStub;
+let createKeyStub: SinonStub;
+let deleteKeyStub: SinonStub;
 
 registerSuite({
 	name: 'commands/initialize/initDeployment',
@@ -35,6 +39,10 @@ registerSuite({
 		travisCreateAuthorizationStub = stub();
 		travisDeleteAuthorizationStub = stub();
 		fetchRepositoryStub = stub();
+		listEnvironmentVariablesStub = stub();
+		setEnvironmentVariablesStub = stub();
+		createKeyStub = stub();
+		deleteKeyStub = stub();
 
 		Travis = class {
 			constructor() {}
@@ -46,6 +54,11 @@ registerSuite({
 
 		GitHub = class {
 			constructor() {}
+			toString() {
+				return 'repo';
+			}
+			createKey: SinonStub = createKeyStub;
+			deleteKey: SinonStub = deleteKeyStub;
 		};
 
 		TravisSpy = spy(Travis);
@@ -57,15 +70,21 @@ registerSuite({
 	},
 
 	beforeEach() {
+		listEnvironmentVariablesStub.returns(Promise.resolve([]));
+		fetchRepositoryStub.returns(Promise.resolve({
+			listEnvironmentVariables: listEnvironmentVariablesStub,
+			setEnvironmentVariables: setEnvironmentVariablesStub
+		}));
+
 		initDeployment = loadModule('src/commands/initialize/initDeployment', {
 			'../../util/Travis': { default: TravisSpy },
 			'../../util/GitHub': { default: GitHubSpy },
 			'../../util/environment': {
-				env: {
-					githubAuth: githubAuthStub,
-					keyFile: keyFileStub,
-					encryptedKeyFile: encryptedKeyFileStub
-				}
+				decryptKey: 'decryptKey',
+				decryptIv: 'decryptIv',
+				githubAuth: githubAuthStub,
+				keyFile: keyFileStub,
+				encryptedKeyFile: encryptedKeyFileStub
 			},
 			'./createDeployKey': { default: createDeployKeyStub },
 			'@dojo/shim/array': {
@@ -92,11 +111,21 @@ registerSuite({
 		travisCreateAuthorizationStub.reset();
 		travisDeleteAuthorizationStub.reset();
 		fetchRepositoryStub.reset();
+		listEnvironmentVariablesStub.reset();
+		setEnvironmentVariablesStub.reset();
+		createKeyStub.reset();
+		deleteKeyStub.reset();
 	},
 
 	'initDeployment': (() => {
 		return {
 			async 'explicit Travis instance and options'() {
+				existsSyncStub.returns(true);
+				listEnvironmentVariablesStub.returns(Promise.resolve([
+					{ name: 'decryptKey', value: 'decryptKey', isPublic: false },
+					{ name: 'decryptIv', value: 'decryptIv', isPublic: false }
+				]));
+
 				const travis = new Travis();
 
 				await assertInitDeployment(travis, {
