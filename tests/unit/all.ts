@@ -16,4 +16,5 @@ import './src/util/process';
 import './src/util/GitHub';
 import './src/util/Travis';
 import './src/util/streams';
+import './tasks/sync';
 import './tasks/util/getGithubSlug';
