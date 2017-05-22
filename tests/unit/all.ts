@@ -1,5 +1,6 @@
 import './src/log';
 import './src/commands/getReleases';
+import './src/commands/installDependencies';
 import './src/util/crypto';
 import './src/util/environment';
 import './src/util/file';
