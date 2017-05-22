@@ -7,7 +7,6 @@ let initDeployment: any;
 let Travis: any;
 let GitHub: any;
 let TravisSpy: SinonSpy;
-let GitHubSpy: SinonSpy;
 let githubAuthStub: SinonStub;
 let keyFileStub: SinonStub;
 let encryptedKeyFileStub: SinonStub;
@@ -62,7 +61,6 @@ registerSuite({
 		};
 
 		TravisSpy = spy(Travis);
-		GitHubSpy = spy(GitHub);
 	},
 
 	after() {
@@ -70,18 +68,32 @@ registerSuite({
 	},
 
 	beforeEach() {
-		listEnvironmentVariablesStub.returns(Promise.resolve([]));
+		isAuthorizedStub.returns(true);
+		keyFileStub.returns('keyFile');
+		encryptedKeyFileStub.returns('encryptedKeyFile');
+		existsSyncStub.returns(true);
 		fetchRepositoryStub.returns(Promise.resolve({
 			listEnvironmentVariables: listEnvironmentVariablesStub,
 			setEnvironmentVariables: setEnvironmentVariablesStub
 		}));
+		listEnvironmentVariablesStub.returns(Promise.resolve([
+			{ name: 'decryptKey', value: 'decryptKey', isPublic: false },
+			{ name: 'decryptIv', value: 'decryptIv', isPublic: false }
+		]));
+		createDeployKeyStub.returns({
+			publicKey: 'publicKey',
+			privateKey: 'privateKey',
+			encryptedKey: {
+				key: 'encryptedKey',
+				iv: 'encryptedIv'
+			}
+		});
 
 		initDeployment = loadModule('src/commands/initialize/initDeployment', {
 			'../../util/Travis': { default: TravisSpy },
-			'../../util/GitHub': { default: GitHubSpy },
 			'../../util/environment': {
-				decryptKey: 'decryptKey',
-				decryptIv: 'decryptIv',
+				decryptKeyName: 'decryptKey',
+				decryptIvName: 'decryptIv',
 				githubAuth: githubAuthStub,
 				keyFile: keyFileStub,
 				encryptedKeyFile: encryptedKeyFileStub
@@ -99,7 +111,6 @@ registerSuite({
 
 	afterEach() {
 		TravisSpy.reset();
-		GitHubSpy.reset();
 		githubAuthStub.reset();
 		keyFileStub.reset();
 		encryptedKeyFileStub.reset();
@@ -120,12 +131,6 @@ registerSuite({
 	'initDeployment': (() => {
 		return {
 			async 'explicit Travis instance and options'() {
-				existsSyncStub.returns(true);
-				listEnvironmentVariablesStub.returns(Promise.resolve([
-					{ name: 'decryptKey', value: 'decryptKey', isPublic: false },
-					{ name: 'decryptIv', value: 'decryptIv', isPublic: false }
-				]));
-
 				const travis = new Travis();
 
 				await assertInitDeployment(travis, {
@@ -134,21 +139,62 @@ registerSuite({
 				});
 			},
 
-			async 'Travis is not authorized'() {
+			async 'default instance and options; Travis is not authorized, should not create deploy key'() {
 				isAuthorizedStub.returns(false);
+				travisCreateAuthorizationStub.returns(Promise.resolve());
 
 				await assertInitDeployment();
 
+				assert.isTrue(TravisSpy.calledOnce);
+				assert.isTrue(keyFileStub.calledOnce);
+				assert.isTrue(encryptedKeyFileStub.calledOnce);
+				assert.isTrue(existsSyncStub.calledOnce);
+
+				assert.isTrue(createDeployKeyStub.notCalled);
+				assert.isTrue(createKeyStub.notCalled);
+				assert.isTrue(setEnvironmentVariablesStub.notCalled);
+
 				assert.isTrue(travisCreateAuthorizationStub.calledOnce);
+				assert.isTrue(findStub.calledOnce);
 			},
 
-			async 'fetch repo and environment, create authorization'() {
+			async 'should create deploy key'() {
+				listEnvironmentVariablesStub.returns(Promise.resolve([]));
+				isAuthorizedStub.returns(false);
+				existsSyncStub.returns(false);
+
+				await assertInitDeployment();
+
+				assert.isTrue(createDeployKeyStub.calledOnce);
+				assert.isTrue(readFileSyncStub.calledOnce);
+				assert.isTrue(createKeyStub.calledOnce);
+				assert.isTrue(setEnvironmentVariablesStub.calledOnce);
 			},
 
-			async 'eventually throws'() {
+			async 'has no key; eventually throws'() {
+				const errorMessage = 'error: cannot create key';
+
+				createKeyStub.returns(Promise.reject(errorMessage));
+
+				try {
+					await assertInitDeployment();
+				} catch (e) {
+					assert.isTrue(deleteKeyStub.calledOnce);
+					assert.strictEqual(errorMessage, e.message);
+				}
 			},
 
-			async 'delete repo authorization'() {
+			async 'has deploy key; eventually throws'() {
+				const errorMessage = 'error: cannot set env vars';
+
+				setEnvironmentVariablesStub.returns(Promise.reject(errorMessage));
+
+				try {
+					await assertInitDeployment();
+				} catch (e) {
+					assert.isTrue(deleteKeyStub.notCalled);
+					assert.strictEqual(errorMessage, e.message);
+				}
 			}
 		};
 
@@ -157,8 +203,8 @@ registerSuite({
 
 			await initDeployment(repo, travis, options);
 
-			assert.isTrue(TravisSpy.calledOnce);
 			assert.isTrue(isAuthorizedStub.calledOnce);
+			assert.isTrue(fetchRepositoryStub.calledOnce);
 			assert.isTrue(travisDeleteAuthorizationStub.calledOnce);
 		}
 	})()
