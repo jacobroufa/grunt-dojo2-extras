@@ -3,7 +3,7 @@ import * as assert from 'intern/chai!assert';
 import IMultiTask = grunt.task.IMultiTask;
 import * as grunt from 'grunt';
 import { stub } from 'sinon';
-import { loadTasks, runGruntTask, unloadTasks } from '../../util';
+import { loadTasks, runGruntTask, unloadTasks } from '../../../_support/loadGrunt';
 import wrapAsyncTask from 'tasks/util/wrapAsyncTask';
 
 const asyncStub = stub();
