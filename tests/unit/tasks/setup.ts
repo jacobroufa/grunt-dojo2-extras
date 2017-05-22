@@ -17,16 +17,18 @@ registerSuite({
 
 	setup() {
 		grunt.initConfig({
-			setupAuth: {
-				repo: {},
-				options: {
-					github: {
-						password: 'password',
-						username: 'username'
-					}
-				}
+			'github.password': 'password',
+			'github.username': 'username',
+			github: {
+				password: 'password',
+				username: 'username'
 			},
-			setupDeploy: {}
+			setupAuth: {
+				repo: {}
+			},
+			setupDeploy: {
+				repo: {}
+			}
 		});
 
 		GitHub = class {
@@ -71,6 +73,8 @@ registerSuite({
 			assert.isTrue(initDeploymentStub.calledOnce);
 			assert.isUndefined(result);
 		}));
+
+		return dfd.promise;
 	},
 
 	'setupAuth task calls initAuthorization; eventually resolves'(this: any) {
@@ -84,5 +88,7 @@ registerSuite({
 			assert.isTrue(initAuthorizationStub.calledOnce);
 			assert.isUndefined(result);
 		}));
+
+		return dfd.promise;
 	}
 });
