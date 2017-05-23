@@ -5,28 +5,19 @@ import { spy, stub, SinonSpy, SinonStub } from 'sinon';
 
 let typedoc: any;
 let TypedocSpy: SinonSpy;
-let dirnameStub: SinonStub;
-let expandInputFilesStub: SinonStub;
-let extnameStub: SinonStub;
-let findConfigFileStub: SinonStub;
-let generateDocsStub: SinonStub;
-let generateJsonStub: SinonStub;
-let mkdirpStub: SinonStub;
-let statSyncStub: SinonStub;
+const dirnameStub = stub();
+const expandInputFilesStub = stub();
+const extnameStub = stub();
+const findConfigFileStub = stub();
+const generateDocsStub = stub();
+const generateJsonStub = stub();
+const mkdirpStub = stub();
+const statSyncStub = stub();
 
 registerSuite({
 	name: 'commands/typedoc',
 
 	before() {
-		dirnameStub = stub();
-		expandInputFilesStub = stub();
-		extnameStub = stub();
-		findConfigFileStub = stub();
-		generateDocsStub = stub();
-		generateJsonStub = stub();
-		mkdirpStub = stub();
-		statSyncStub = stub();
-
 		const Typedoc = class {
 			bootstrapResult: any = { inputFiles: 'inputFiles' };
 			expandInputFiles: SinonStub = expandInputFilesStub;
