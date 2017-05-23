@@ -1,32 +1,23 @@
 import * as registerSuite from 'intern!object';
 import * as assert from 'intern/chai!assert';
 import loadModule, { cleanupModuleMocks } from '../../../_support/loadModule';
-import { stub, SinonStub } from 'sinon';
+import { stub } from 'sinon';
 
 let decryptDeployKey: any;
-let decryptDataObj: any;
-let decryptDataStub: SinonStub;
-let encryptedKeyFileStub: SinonStub;
-let keyFileStub: SinonStub;
-let existsSyncStub: SinonStub;
-let createWriteStreamStub: SinonStub;
-let createReadStreamStub: SinonStub;
+
+const decryptDataObj = {
+	on: stub(),
+	pipe: stub()
+};
+const decryptDataStub = stub();
+const encryptedKeyFileStub = stub();
+const keyFileStub = stub();
+const existsSyncStub = stub();
+const createWriteStreamStub = stub();
+const createReadStreamStub = stub();
 
 registerSuite({
 	name: 'commands/decryptDeployKey',
-
-	before() {
-		decryptDataObj = {
-			on: stub(),
-			pipe: stub()
-		};
-		decryptDataStub = stub();
-		encryptedKeyFileStub = stub();
-		keyFileStub = stub();
-		existsSyncStub = stub();
-		createWriteStreamStub = stub();
-		createReadStreamStub = stub();
-	},
 
 	after() {
 		cleanupModuleMocks();
@@ -72,15 +63,20 @@ registerSuite({
 
 				const deployKeyDecrypted = await assertDecryptDeployKey('encrypted.file', 'decrypt key', 'decrypt iv', 'decrypted.file');
 
-				assert.isTrue(deployKeyDecrypted);
-
+				// default arguments are not used
 				assert.isTrue(encryptedKeyFileStub.notCalled);
 				assert.isTrue(keyFileStub.notCalled);
 
+				// promise function is properly called
 				assert.isTrue(createReadStreamStub.calledOnce);
 				assert.isTrue(createWriteStreamStub.calledOnce);
+
+				// decryptData is expected to be called with the appropriate arguments
 				assert.isTrue(decryptDataStub.calledOnce);
 				assert.isTrue(decryptDataStub.calledWith('readStream', 'decrypt key', 'decrypt iv'));
+
+				// decryptData pipe properly closed
+				assert.isTrue(deployKeyDecrypted);
 			},
 
 			async 'arguments obtained from default'() {
