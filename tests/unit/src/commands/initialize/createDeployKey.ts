@@ -1,38 +1,26 @@
 import * as registerSuite from 'intern!object';
 import * as assert from 'intern/chai!assert';
 import loadModule, { cleanupModuleMocks } from '../../../../_support/loadModule';
-import { stub, SinonStub } from 'sinon';
+import { stub } from 'sinon';
 
 let createDeployKey: any;
-let encryptedStub: any;
-let keyFileStub: SinonStub;
-let encryptedKeyFileStub: SinonStub;
-let existsSyncStub: SinonStub;
-let createReadStreamStub: SinonStub;
-let createWriteStreamStub: SinonStub;
-let createKeyStub: SinonStub;
-let encryptDataStub: SinonStub;
-let decryptDataStub: SinonStub;
-let equalStub: SinonStub;
+
+const encryptedStub = {
+	pipe: stub(),
+	on: stub()
+};
+const keyFileStub = stub();
+const encryptedKeyFileStub = stub();
+const existsSyncStub = stub();
+const createReadStreamStub = stub();
+const createWriteStreamStub = stub();
+const createKeyStub = stub();
+const encryptDataStub = stub();
+const decryptDataStub = stub();
+const equalStub = stub();
 
 registerSuite({
 	name: 'commands/initialize/createDeployKey',
-
-	before() {
-		encryptedStub = {
-			pipe: stub(),
-			on: stub()
-		};
-		keyFileStub = stub();
-		encryptedKeyFileStub = stub();
-		existsSyncStub = stub();
-		createReadStreamStub = stub();
-		createWriteStreamStub = stub();
-		createKeyStub = stub();
-		encryptDataStub = stub();
-		decryptDataStub = stub();
-		equalStub = stub();
-	},
 
 	after() {
 		cleanupModuleMocks();
@@ -95,15 +83,14 @@ registerSuite({
 				assert.isTrue(encryptedKeyFileStub.calledOnce);
 			},
 
-			async 'Deploy key already exists'() {
+			'Deploy key already exists'() {
 				existsSyncStub.returns(true);
 
-				try {
-					await createDeployKey('deploykey.file', 'deploykey.enc');
-				} catch (err) {
+				const promise = createDeployKey('deploykey.file', 'deploykey.enc');
+				return promise.then(assert.fail, (err: any) => {
 					assert.strictEqual(err.message, 'Deploy key already exists');
 					assert.isTrue(existsSyncStub.calledOnce);
-				}
+				});
 
 			}
 		};
