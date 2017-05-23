@@ -70,18 +70,16 @@ registerSuite({
 					repo.findAuthorization.reset();
 				},
 
-				async 'existing authorization; eventually throws'() {
+				'existing authorization; eventually throws'() {
 					repo.findAuthorization.returns(Promise.resolve({ id: 1 }));
 
-					try {
-						await travis.createAuthorization(repo);
+					const promise = travis.createAuthorization(repo);
 
-						assert.fail();
-					} catch (e) {
+					return promise.then(assert.fail, (e) => {
 						assert.strictEqual(e.message, 'An existing authorization exists. "#1"');
 						assert.isTrue(repo.createAuthorization.notCalled);
 						assert.isTrue(repo.findAuthorization.calledOnce);
-					}
+					});
 				},
 
 				async 'authentication succeeds'() {
@@ -106,9 +104,11 @@ registerSuite({
 					try {
 						await travis.createAuthorization(repo);
 					} catch (e) {
-						assert.isTrue(auth.calledOnce);
-						assert.isTrue(deleteAuth.calledOnce);
+						// expected to throw
 					}
+
+					assert.isTrue(auth.calledOnce);
+					assert.isTrue(deleteAuth.calledOnce);
 
 					auth.restore();
 					deleteAuth.restore();
