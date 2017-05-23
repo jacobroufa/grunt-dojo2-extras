@@ -70,6 +70,8 @@ registerSuite({
 
 					proc.on.lastCall.args[1](1);
 					assert.equal(proc, await promise);
+
+					assert.fail('promise should reject');
 				} catch (e) {
 					assert.strictEqual(e.message, 'Process exited with a code of 1');
 					assert.strictEqual(process.exitCode, 1);
