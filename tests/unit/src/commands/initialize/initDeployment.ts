@@ -1,67 +1,47 @@
 import * as registerSuite from 'intern!object';
 import * as assert from 'intern/chai!assert';
 import loadModule, { cleanupModuleMocks } from '../../../../_support/loadModule';
-import { spy, stub, SinonSpy, SinonStub } from 'sinon';
+import { spy, stub, SinonStub } from 'sinon';
 
 let initDeployment: any;
-let Travis: any;
-let GitHub: any;
-let TravisSpy: SinonSpy;
-let githubAuthStub: SinonStub;
-let keyFileStub: SinonStub;
-let encryptedKeyFileStub: SinonStub;
-let createDeployKeyStub: SinonStub;
-let findStub: SinonStub;
-let existsSyncStub: SinonStub;
-let readFileSyncStub: SinonStub;
-let isAuthorizedStub: SinonStub;
-let travisCreateAuthorizationStub: SinonStub;
-let travisDeleteAuthorizationStub: SinonStub;
-let fetchRepositoryStub: SinonStub;
-let listEnvironmentVariablesStub: SinonStub;
-let setEnvironmentVariablesStub: SinonStub;
-let createKeyStub: SinonStub;
-let deleteKeyStub: SinonStub;
+
+const githubAuthStub = stub();
+const keyFileStub = stub();
+const encryptedKeyFileStub = stub();
+const createDeployKeyStub = stub();
+const findStub = stub();
+const existsSyncStub = stub();
+const readFileSyncStub = stub();
+const isAuthorizedStub = stub();
+const travisCreateAuthorizationStub = stub();
+const travisDeleteAuthorizationStub = stub();
+const fetchRepositoryStub = stub();
+const listEnvironmentVariablesStub = stub();
+const setEnvironmentVariablesStub = stub();
+const createKeyStub = stub();
+const deleteKeyStub = stub();
+
+const Travis = class {
+	constructor() {}
+	isAuthorized: SinonStub = isAuthorizedStub;
+	createAuthorization: SinonStub = travisCreateAuthorizationStub;
+	deleteAuthorization: SinonStub = travisDeleteAuthorizationStub;
+	fetchRepository: SinonStub = fetchRepositoryStub;
+};
+
+const GitHub = class {
+	constructor() {}
+	toString() {
+		return 'repo';
+	}
+	createKey: SinonStub = createKeyStub;
+	deleteKey: SinonStub = deleteKeyStub;
+};
+
+const TravisSpy = spy(Travis);
 
 registerSuite({
 	name: 'commands/initialize/initDeployment',
-
-	before() {
-		githubAuthStub = stub();
-		keyFileStub = stub();
-		encryptedKeyFileStub = stub();
-		createDeployKeyStub = stub();
-		findStub = stub();
-		existsSyncStub = stub();
-		readFileSyncStub = stub();
-		isAuthorizedStub = stub();
-		travisCreateAuthorizationStub = stub();
-		travisDeleteAuthorizationStub = stub();
-		fetchRepositoryStub = stub();
-		listEnvironmentVariablesStub = stub();
-		setEnvironmentVariablesStub = stub();
-		createKeyStub = stub();
-		deleteKeyStub = stub();
-
-		Travis = class {
-			constructor() {}
-			isAuthorized: SinonStub = isAuthorizedStub;
-			createAuthorization: SinonStub = travisCreateAuthorizationStub;
-			deleteAuthorization: SinonStub = travisDeleteAuthorizationStub;
-			fetchRepository: SinonStub = fetchRepositoryStub;
-		};
-
-		GitHub = class {
-			constructor() {}
-			toString() {
-				return 'repo';
-			}
-			createKey: SinonStub = createKeyStub;
-			deleteKey: SinonStub = deleteKeyStub;
-		};
-
-		TravisSpy = spy(Travis);
-	},
 
 	after() {
 		cleanupModuleMocks();
@@ -145,16 +125,26 @@ registerSuite({
 
 				await assertInitDeployment();
 
+				// default options
 				assert.isTrue(TravisSpy.calledOnce);
 				assert.isTrue(keyFileStub.calledOnce);
 				assert.isTrue(encryptedKeyFileStub.calledOnce);
+
+				// because travis is not authorized, we should create an authorization
+				assert.isTrue(travisCreateAuthorizationStub.calledOnce);
+
+				// we should get the Travis environment variables
+				assert.isTrue(listEnvironmentVariablesStub.calledOnce);
+
+				// existsSync is called within the private function `shouldCreateDeployKey`
 				assert.isTrue(existsSyncStub.calledOnce);
 
+				// we shouldn't be creating a deploy key, so these stubs should not be called
 				assert.isTrue(createDeployKeyStub.notCalled);
 				assert.isTrue(createKeyStub.notCalled);
 				assert.isTrue(setEnvironmentVariablesStub.notCalled);
 
-				assert.isTrue(travisCreateAuthorizationStub.calledOnce);
+				// find is called within the private function `displayDeployOptionSummary`
 				assert.isTrue(findStub.calledOnce);
 			},
 
@@ -171,7 +161,7 @@ registerSuite({
 				assert.isTrue(setEnvironmentVariablesStub.calledOnce);
 			},
 
-			async 'has no key; eventually throws'() {
+			async 'has no ssh key so will not call `deleteKey`; eventually throws'() {
 				const errorMessage = 'error: cannot create key';
 
 				createKeyStub.returns(Promise.reject(errorMessage));
@@ -179,12 +169,12 @@ registerSuite({
 				try {
 					await assertInitDeployment();
 				} catch (e) {
-					assert.isTrue(deleteKeyStub.calledOnce);
+					assert.isTrue(deleteKeyStub.notCalled);
 					assert.strictEqual(errorMessage, e.message);
 				}
 			},
 
-			async 'has deploy key; eventually throws'() {
+			async 'has deploy key environment variable; calls `deleteKey`; eventually throws'() {
 				const errorMessage = 'error: cannot set env vars';
 
 				setEnvironmentVariablesStub.returns(Promise.reject(errorMessage));
@@ -192,7 +182,7 @@ registerSuite({
 				try {
 					await assertInitDeployment();
 				} catch (e) {
-					assert.isTrue(deleteKeyStub.notCalled);
+					assert.isTrue(deleteKeyStub.calledOnce);
 					assert.strictEqual(errorMessage, e.message);
 				}
 			}
