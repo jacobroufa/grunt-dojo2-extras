@@ -64,15 +64,6 @@ registerSuite({
 					};
 				},
 
-				afterEach() {
-					opts.repo.add.reset();
-					opts.repo.areFilesChanged.reset();
-					opts.repo.commit.reset();
-					opts.repo.ensureConfig.reset();
-					opts.repo.getConfig.reset();
-					opts.repo.push.reset();
-				},
-
 				async 'repo has no changes'() {
 					const areFilesChanged = opts.repo.areFilesChanged;
 
@@ -84,7 +75,7 @@ registerSuite({
 					assert.isTrue(opts.repo.ensureConfig.notCalled);
 				},
 
-				async 'publishMode is "commit"; gitCommit returns value'() {
+				async 'publishMode is "commit"; gitCommit returns a value; repo is published'() {
 					gitCommitStub.returns('a35de344');
 
 					await publish(opts);
