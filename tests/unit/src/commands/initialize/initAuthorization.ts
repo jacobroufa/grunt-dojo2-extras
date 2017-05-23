@@ -1,71 +1,52 @@
 import * as registerSuite from 'intern!object';
 import * as assert from 'intern/chai!assert';
 import loadModule, { cleanupModuleMocks } from '../../../../_support/loadModule';
-import { spy, stub, SinonSpy, SinonStub } from 'sinon';
+import { spy, stub, SinonStub } from 'sinon';
 
 let initAuthorization: any;
-let Travis: any;
-let GitHub: any;
-let TravisSpy: SinonSpy;
-let GitHubSpy: SinonSpy;
-let isAuthorizedStub: SinonStub;
-let travisCreateAuthorizationStub: SinonStub;
-let travisDeleteAuthorizationStub: SinonStub;
-let listEnvironmentVariablesStub: SinonStub;
-let setEnvironmentVariablesStub: SinonStub;
-let fetchRepositoryStub: SinonStub;
-let authenticateStub: SinonStub;
-let getRateLimitStub: SinonStub;
-let toStringStub: SinonStub;
-let repoCreateAuthorizationStub: SinonStub;
-let repoDeleteAuthorizationStub: SinonStub;
-let findStub: SinonStub;
-let githubAuthStub: SinonStub;
+
+const isAuthorizedStub = stub();
+const travisCreateAuthorizationStub = stub();
+const travisDeleteAuthorizationStub = stub();
+const listEnvironmentVariablesStub = stub();
+const setEnvironmentVariablesStub = stub();
+const fetchRepositoryStub = stub();
+const authenticateStub = stub();
+const getRateLimitStub = stub();
+const toStringStub = stub();
+const repoCreateAuthorizationStub = stub();
+const repoDeleteAuthorizationStub = stub();
+const findStub = stub();
+const githubAuthStub = stub();
+
+const Travis = class {
+	constructor() {}
+	isAuthorized: SinonStub = isAuthorizedStub;
+	createAuthorization: SinonStub = travisCreateAuthorizationStub;
+	deleteAuthorization: SinonStub = travisDeleteAuthorizationStub;
+	fetchRepository: SinonStub = fetchRepositoryStub;
+};
+
+const GitHub = class {
+	constructor() {}
+	owner = 'dojo';
+	name = 'grunt-dojo2-extras';
+	api: any = {
+		authenticate: authenticateStub,
+		misc: {
+			getRateLimit: getRateLimitStub
+		}
+	};
+	toString: SinonStub = toStringStub;
+	createAuthorization = repoCreateAuthorizationStub;
+	deleteAuthorization = repoDeleteAuthorizationStub;
+};
+
+const TravisSpy = spy(Travis);
+const GitHubSpy = spy(GitHub);
 
 registerSuite({
 	name: 'commands/initialize/initAuthorization',
-
-	before() {
-		isAuthorizedStub = stub();
-		travisCreateAuthorizationStub = stub();
-		travisDeleteAuthorizationStub = stub();
-		listEnvironmentVariablesStub = stub();
-		setEnvironmentVariablesStub = stub();
-		fetchRepositoryStub = stub();
-		authenticateStub = stub();
-		getRateLimitStub = stub();
-		toStringStub = stub();
-		repoCreateAuthorizationStub = stub();
-		repoDeleteAuthorizationStub = stub();
-		findStub = stub();
-		githubAuthStub = stub();
-
-		Travis = class {
-			constructor() {}
-			isAuthorized: SinonStub = isAuthorizedStub;
-			createAuthorization: SinonStub = travisCreateAuthorizationStub;
-			deleteAuthorization: SinonStub = travisDeleteAuthorizationStub;
-			fetchRepository: SinonStub = fetchRepositoryStub;
-		};
-
-		GitHub = class {
-			constructor() {}
-			owner = 'dojo';
-			name = 'grunt-dojo2-extras';
-			api: any = {
-				authenticate: authenticateStub,
-				misc: {
-					getRateLimit: getRateLimitStub
-				}
-			};
-			toString: SinonStub = toStringStub;
-			createAuthorization = repoCreateAuthorizationStub;
-			deleteAuthorization = repoDeleteAuthorizationStub;
-		};
-
-		TravisSpy = spy(Travis);
-		GitHubSpy = spy(GitHub);
-	},
 
 	after() {
 		cleanupModuleMocks();
@@ -104,8 +85,8 @@ registerSuite({
 		isAuthorizedStub.reset();
 		travisCreateAuthorizationStub.reset();
 		travisDeleteAuthorizationStub.reset();
-		listEnvironmentVariablesStub = stub();
-		setEnvironmentVariablesStub = stub();
+		listEnvironmentVariablesStub.reset();
+		setEnvironmentVariablesStub.reset();
 		fetchRepositoryStub.reset();
 		authenticateStub.reset();
 		getRateLimitStub.reset();
@@ -142,29 +123,25 @@ registerSuite({
 				assert.isTrue(setEnvironmentVariablesStub.calledOnce);
 			},
 
-			async 'eventually throws'() {
+			'eventually throws'() {
 				fetchRepositoryStub.returns(Promise.reject(new Error('error')));
 
-				try {
-					await assertInitAuthorization();
+				const promise = assertInitAuthorization();
 
-					assert.fail();
-				} catch (e) {
+				return promise.then(assert.fail, (e) => {
 					assert.strictEqual(e.message, 'error');
-				}
+				});
 			},
 
-			async 'delete repo authorization'() {
+			'delete repo authorization'() {
 				repoCreateAuthorizationStub.returns(Promise.resolve(true));
 				setEnvironmentVariablesStub.returns(Promise.reject(new Error('error')));
 
-				try {
-					await assertInitAuthorization();
+				const promise = assertInitAuthorization();
 
-					assert.fail();
-				} catch (e) {
+				return promise.then(assert.fail, () => {
 					assert.isTrue(repoDeleteAuthorizationStub.calledOnce);
-				}
+				});
 			}
 		};
 
