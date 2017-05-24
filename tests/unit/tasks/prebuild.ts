@@ -1,8 +1,10 @@
 import * as registerSuite from 'intern!object';
 import * as assert from 'intern/chai!assert';
+import * as Test from 'intern/lib/Test';
 import * as grunt from 'grunt';
-import loadModule, { cleanupModuleMocks } from '../../_support/loadModule';
 import { stub } from 'sinon';
+import loadModule, { cleanupModuleMocks } from '../../_support/loadModule';
+import { setupWrappedAsyncStub } from '../../_support/tasks';
 
 let prebuild: any;
 
@@ -31,35 +33,34 @@ registerSuite({
 		decryptDeployKeyStub.reset();
 	},
 
-	'prebuildTask eventually resolves'(this: any) {
-		wrapAsyncTaskStub.yieldsAsync(this);
-		decryptDeployKeyStub.returns(true);
+	'decryptDeployKey': (() => {
+		return {
+			'returns something'(this: Test) {
+				assertInWrappedAsyncStub.call(this);
 
-		try {
-			prebuild(grunt);
-		} catch (e) {
-			// should not throw
-			console.log(e);
+				decryptDeployKeyStub.returns(Promise.resolve(true));
+
+				prebuild(grunt);
+
+				assert.isTrue(wrapAsyncTaskStub.calledOnce);
+			},
+
+			'returns nothing'(this: Test) {
+				assertInWrappedAsyncStub.call(this);
+
+				decryptDeployKeyStub.returns(Promise.resolve(false));
+
+				prebuild(grunt);
+
+				assert.isTrue(wrapAsyncTaskStub.calledOnce);
+			}
+		};
+
+		function assertInWrappedAsyncStub(this: Test) {
+			setupWrappedAsyncStub(wrapAsyncTaskStub, this.async(), () => {
+				assert.isTrue(registerTaskStub.calledOnce);
+				assert.isTrue(decryptDeployKeyStub.calledOnce);
+			});
 		}
-
-		assert.isTrue(registerTaskStub.calledOnce);
-		assert.isTrue(wrapAsyncTaskStub.calledOnce);
-		assert.isTrue(decryptDeployKeyStub.calledOnce);
-	},
-
-	'prebuildTask eventually rejects'(this: any) {
-		wrapAsyncTaskStub.yieldsAsync(this);
-		decryptDeployKeyStub.returns(false);
-
-		try {
-			prebuild(grunt);
-		} catch (e) {
-			// might throw
-			console.log(e);
-		}
-
-		assert.isTrue(registerTaskStub.calledOnce);
-		assert.isTrue(wrapAsyncTaskStub.calledOnce);
-		assert.isTrue(decryptDeployKeyStub.calledOnce);
-	}
+	})()
 });
