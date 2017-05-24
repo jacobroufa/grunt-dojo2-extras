@@ -1,59 +1,50 @@
 import * as registerSuite from 'intern!object';
 import * as assert from 'intern/chai!assert';
 import * as grunt from 'grunt';
-import { loadTasks, unloadTasks, runGruntTask } from '../../_support/loadGrunt';
-import { stub, spy, SinonStub, SinonSpy } from 'sinon';
+import loadModule, { cleanupModuleMocks } from '../../_support/loadModule';
+import { stub, spy, SinonStub } from 'sinon';
 
-let GitHub: any;
-let Git: any;
-let GitHubSpy: SinonSpy;
-let GitSpy: SinonSpy;
+let sync: any;
+let taskOptions: any;
 
 const getGithubSlugStub = stub();
 const syncStub = stub();
 const getConfigStub = stub();
+const wrapAsyncTaskStub = stub();
+const registerMultiTaskStub = stub(grunt, 'registerMultiTask');
+
+const Git = class {
+	constructor() {}
+	getConfig: SinonStub = getConfigStub;
+};
+const GitHub = class {
+	constructor() {
+		return this;
+	}
+	url: 'github.url';
+};
+
+const GitSpy = spy(Git);
+const GitHubSpy = spy(GitHub);
 
 registerSuite({
 	name: 'tasks/sync',
 
-	setup() {
-		grunt.initConfig({
-			sync: {
-				latest: {
-					options: {
-						branch: 'latest',
-						cloneDirectory: 'cloneDirectory'
-					}
-				}
-			}
-		});
+	after() {
+		cleanupModuleMocks();
+		registerMultiTaskStub.restore();
+	},
 
-		Git = class {
-			constructor() {}
-			getConfig: SinonStub = getConfigStub;
-		};
-
-		GitSpy = spy(Git);
-
-		GitHub = class {
-			constructor() {
-				return this;
-			}
-			url: 'github.url';
-		};
-
-		GitHubSpy = spy(GitHub);
-
-		loadTasks({
+	beforeEach() {
+		sync = loadModule('tasks/sync', {
 			'../src/commands/sync': { default: syncStub },
+			'./util/wrapAsyncTask': { default: wrapAsyncTaskStub.yieldsAsync({
+				options: taskOptions
+			}) },
 			'./util/getGithubSlug': { default: getGithubSlugStub },
 			'../src/util/GitHub': { default: GitHubSpy },
 			'../src/util/Git': { default: GitSpy }
 		});
-	},
-
-	teardown() {
-		unloadTasks();
 	},
 
 	afterEach() {
@@ -62,58 +53,68 @@ registerSuite({
 		GitSpy.reset();
 		GitHubSpy.reset();
 		getConfigStub.reset();
+		wrapAsyncTaskStub.reset();
 	},
 
 	'syncTask uses GitHub repo info, calls sync; eventually resolves'(this: any) {
+		taskOptions = (opts: any) => opts;
 		getGithubSlugStub.returns({ name: 'name', owner: 'owner' });
 		syncStub.returns(Promise.resolve());
 
-		const dfd = this.async();
+		sync(grunt);
 
-		runGruntTask('sync:latest', dfd.callback((result: any) => {
-			assert.isTrue(getGithubSlugStub.calledOnce);
-			assert.isTrue(syncStub.calledOnce);
-			assert.isUndefined(result);
-		}));
+		assert.isTrue(registerMultiTaskStub.calledOnce);
+		assert.isTrue(wrapAsyncTaskStub.calledOnce);
+
+		assert.isTrue(getGithubSlugStub.calledOnce);
+		assert.isTrue(GitHubSpy.calledOnce);
+
+		assert.isTrue(syncStub.calledOnce);
 	},
 
 	'syncTask calls sync; eventually rejects'(this: any) {
+		taskOptions = (opts: any) => opts;
 		getGithubSlugStub.returns({ name: 'name', owner: 'owner' });
 		syncStub.returns(Promise.reject());
 
-		const dfd = this.async();
+		sync(grunt);
 
-		runGruntTask('sync:latest', dfd.callback((result: any) => {
-			assert.isTrue(syncStub.calledOnce);
-			assert.isFalse(result);
-		}));
+		assert.isTrue(registerMultiTaskStub.calledOnce);
+		assert.isTrue(wrapAsyncTaskStub.calledOnce);
+
+		assert.isTrue(syncStub.calledOnce);
 	},
 
 	'syncTask uses git repo url; eventually resolves'(this: any) {
+		taskOptions = (opts: any) => opts;
 		getConfigStub.returns(Promise.resolve('repo.url'));
 		getGithubSlugStub.returns({});
 		syncStub.returns(Promise.resolve());
 
-		const dfd = this.async();
+		sync(grunt);
 
-		runGruntTask('sync:latest', dfd.callback((result: any) => {
-			assert.isTrue(GitSpy.calledOnce);
-			assert.isTrue(getConfigStub.calledOnce);
-			assert.isTrue(syncStub.calledOnce);
-			assert.isUndefined(result);
-		}));
+		assert.isTrue(registerMultiTaskStub.calledOnce);
+		assert.isTrue(wrapAsyncTaskStub.calledOnce);
+
+		assert.isTrue(GitSpy.calledOnce);
+		assert.isTrue(getConfigStub.calledOnce);
+
+		assert.isTrue(syncStub.calledOnce);
 	},
 
 	'syncTask has url in options; eventually resolves'(this: any) {
-		grunt.config('sync.latest.options.url', 'options.url');
+		taskOptions = () => {
+			return { url: 'options.url' };
+		};
 		syncStub.returns(Promise.resolve());
 
-		const dfd = this.async();
+		sync(grunt);
 
-		runGruntTask('sync:latest', dfd.callback((result: any) => {
-			assert.isTrue(getGithubSlugStub.notCalled);
-			assert.isTrue(syncStub.calledOnce);
-			assert.isUndefined(result);
-		}));
+		assert.isTrue(registerMultiTaskStub.calledOnce);
+		assert.isTrue(wrapAsyncTaskStub.calledOnce);
+
+		assert.isTrue(getGithubSlugStub.notCalled);
+
+		assert.isTrue(syncStub.calledOnce);
 	}
 });
