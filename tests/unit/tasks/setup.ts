@@ -1,48 +1,35 @@
 import * as registerSuite from 'intern!object';
 import * as assert from 'intern/chai!assert';
 import * as grunt from 'grunt';
-import { loadTasks, unloadTasks, runGruntTask } from '../../_support/loadGrunt';
-import { stub, spy, SinonSpy } from 'sinon';
+import { stub, spy } from 'sinon';
+import loadModule, { cleanupModuleMocks } from '../../_support/loadModule';
+import { setupWrappedAsyncStub } from '../../_support/tasks';
 
-let GitHub: any;
-let GitHubSpy: SinonSpy;
+let setup: any;
 
 const authenticateStub = stub();
 const getGithubSlugStub = stub();
 const initDeploymentStub = stub();
 const initAuthorizationStub = stub();
+const wrapAsyncTaskStub = stub();
+const optionsStub = stub();
+const registerMultiTaskStub = stub(grunt, 'registerMultiTask');
+const GitHub = class {
+	constructor() {
+		return this;
+	}
+	api: any = {
+		authenticate: authenticateStub
+	};
+};
+const GitHubSpy = spy(GitHub);
 
 registerSuite({
-	name: 'tasks/sync',
+	name: 'tasks/setup',
 
-	setup() {
-		grunt.initConfig({
-			'github.password': 'password',
-			'github.username': 'username',
-			github: {
-				password: 'password',
-				username: 'username'
-			},
-			setupAuth: {
-				repo: {}
-			},
-			setupDeploy: {
-				repo: {}
-			}
-		});
-
-		GitHub = class {
-			constructor() {
-				return this;
-			}
-			api: any = {
-				authenticate: authenticateStub
-			};
-		};
-
-		GitHubSpy = spy(GitHub);
-
-		loadTasks({
+	beforeEach() {
+		setup = loadModule('tasks/setup', {
+			'./util/wrapAsyncTask': { default: wrapAsyncTaskStub },
 			'../src/util/GitHub': { default: GitHubSpy },
 			'./util/getGithubSlug': { default: getGithubSlugStub },
 			'../src/commands/initialize/initDeployment': { default: initDeploymentStub },
@@ -50,8 +37,9 @@ registerSuite({
 		});
 	},
 
-	teardown() {
-		unloadTasks();
+	after() {
+		cleanupModuleMocks();
+		registerMultiTaskStub.restore();
 	},
 
 	afterEach() {
@@ -59,36 +47,36 @@ registerSuite({
 		authenticateStub.reset();
 		initDeploymentStub.reset();
 		initAuthorizationStub.reset();
+		wrapAsyncTaskStub.reset();
+		optionsStub.reset();
 		GitHubSpy.reset();
+		registerMultiTaskStub.reset();
 	},
 
-	'setupDeploy task calls initDeployment; eventually resolves'(this: any) {
+	'setup calls initDeployment and initAuthorization; eventually resolves'(this: any) {
+		let counter = 0;
+
 		getGithubSlugStub.returns({ name: 'name', owner: 'owner' });
+		optionsStub.returns({ password: 'password', username: 'username' });
 
-		const dfd = this.async();
+		setupWrappedAsyncStub.call({
+			options: optionsStub
+		}, wrapAsyncTaskStub, this.async(), () => {
+			// because wrapAsyncTask is called twice in this SUT, we don't want to run
+			// any assertions until it has been called both times.
+			if (counter >= 1) {
+				assert.isTrue(optionsStub.calledTwice);
+				assert.isTrue(registerMultiTaskStub.calledTwice);
+				assert.isTrue(getGithubSlugStub.calledTwice);
+				assert.isTrue(GitHubSpy.calledTwice);
+				assert.isTrue(initDeploymentStub.calledOnce);
+				assert.isTrue(initAuthorizationStub.calledOnce);
+			}
+			counter++;
+		});
 
-		runGruntTask('setupDeploy', dfd.callback((result: any) => {
-			assert.isTrue(getGithubSlugStub.calledOnce);
-			assert.isTrue(GitHubSpy.calledOnce);
-			assert.isTrue(initDeploymentStub.calledOnce);
-			assert.isUndefined(result);
-		}));
+		setup(grunt);
 
-		return dfd.promise;
-	},
-
-	'setupAuth task calls initAuthorization; eventually resolves'(this: any) {
-		getGithubSlugStub.returns({ name: 'name', owner: 'owner' });
-
-		const dfd = this.async();
-
-		runGruntTask('setupAuth', dfd.callback((result: any) => {
-			assert.isTrue(getGithubSlugStub.calledOnce);
-			assert.isTrue(GitHubSpy.calledOnce);
-			assert.isTrue(initAuthorizationStub.calledOnce);
-			assert.isUndefined(result);
-		}));
-
-		return dfd.promise;
+		assert.isTrue(wrapAsyncTaskStub.calledTwice);
 	}
 });
