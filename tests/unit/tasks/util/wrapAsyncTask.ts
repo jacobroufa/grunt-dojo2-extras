@@ -1,57 +1,53 @@
 import * as registerSuite from 'intern!object';
 import * as assert from 'intern/chai!assert';
-import * as grunt from 'grunt';
 import { stub } from 'sinon';
-import { loadTasks, runGruntTask, unloadTasks } from '../../../_support/loadGrunt';
+import wrapAsyncTask from '../../../../tasks/util/wrapAsyncTask';
 
-const syncStub = stub();
-const getGithubSlugStub = stub();
+const doneStub = stub();
+const taskStub = stub();
 
 registerSuite({
 	name: 'tasks/util/wrapAsyncTask',
 
-	setup() {
-		grunt.initConfig({
-			sync: { latest: { options: {
-				branch: 'latest',
-				cloneDirectory: 'cloneDirectory'
-			}}}
-		});
-
-		loadTasks({
-			'../src/commands/sync': { default: syncStub },
-			'./util/getGithubSlug': { default: getGithubSlugStub }
-		});
-	},
-
-	teardown() {
-		unloadTasks();
-	},
-
 	afterEach() {
-		syncStub.reset();
-		getGithubSlugStub.reset();
+		doneStub.reset();
+		taskStub.reset();
 	},
 
-	'task eventually completes'(this: any) {
-		getGithubSlugStub.returns({ name: 'name', owner: 'owner' });
-		syncStub.returns(Promise.resolve());
+	'task eventually': (() => {
+		return {
+			'completes'(this: any) {
+				const taskPromise = Promise.resolve();
+				const callbackAssert = () => {
+					assert.isTrue(doneStub.calledWithExactly(undefined));
+				};
 
-		const dfd = this.async();
+				runWrapAsyncTaskTest.call(this, taskPromise, callbackAssert);
+			},
 
-		runGruntTask('sync:latest', dfd.callback((result: any) => {
-			assert.isUndefined(result);
-		}));
-	},
+			'rejects'(this: any) {
+				const taskPromise = Promise.reject();
+				const errbackAssert = () => {
+					assert.isTrue(doneStub.calledWithExactly(false));
+				};
 
-	'task eventually rejects'(this: any) {
-		getGithubSlugStub.returns({ name: 'name', owner: 'owner' });
-		syncStub.returns(Promise.reject());
+				runWrapAsyncTaskTest.call(this, taskPromise, () => {}, errbackAssert);
+			}
+		};
 
-		const dfd = this.async();
+		function runWrapAsyncTaskTest(this: any, promise: Promise<any>, callback: () => void, errback?: () => void) {
+			taskStub.returns(promise);
 
-		runGruntTask('sync:latest', dfd.callback((result: any) => {
-			assert.isFalse(result);
-		}));
-	}
+			stub(this, 'async').returns(doneStub);
+
+			wrapAsyncTask(taskStub).call(this);
+
+			// in order to properly assert on this test, the promise has to be resolved initially
+			// then passed into wrapAsyncTask and called (so the `then` is chained properly)
+			// and THEN we can make the assertion in the callback or errback as appropriate
+			promise.then(callback, errback);
+
+			this.async.restore();
+		}
+	})()
 });
