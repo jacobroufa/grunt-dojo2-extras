@@ -1,46 +1,42 @@
 import * as registerSuite from 'intern!object';
 import * as assert from 'intern/chai!assert';
 import * as grunt from 'grunt';
-import { loadTasks, unloadTasks, runGruntTask } from '../../_support/loadGrunt';
-import { stub, spy, SinonSpy } from 'sinon';
+import { stub, spy, SinonStub } from 'sinon';
+import loadModule, { cleanupModuleMocks } from '../../_support/loadModule';
+import { setupWrappedAsyncStub } from '../../_support/tasks';
 
-let Git: any;
-let GitSpy: SinonSpy;
+let publish: any;
+let gruntOptionStub: SinonStub;
 
+const Git = class {
+	constructor() {}
+};
+const GitSpy = spy(Git);
 const publishStub = stub();
 const hasGitCredentialsStub = stub();
 const publishModeStub = stub();
+const wrapAsyncTaskStub = stub();
+const optionsStub = stub();
 
 registerSuite({
 	name: 'tasks/publish',
 
-	setup() {
-		grunt.initConfig({
-			publish: {
-				'gh-pages': {
-					options: {
-						branch: 'gh-pages',
-						cloneDirectory: '<%= cloneDirectory %>'
-					}
-				},
-				latest: {
-					options: {
-						branch: 'latest',
-						cloneDirectory: '<%= cloneDirectory %>'
-					}
-				}
-			}
+	after() {
+		cleanupModuleMocks();
+	},
+
+	beforeEach() {
+		gruntOptionStub = stub(grunt, 'option');
+		optionsStub.yieldsTo('publishMode').returns({
+			cloneDirectory: 'cloneDirectory',
+			publishMode: null,
+			repo: null
 		});
 
-		Git = class {
-			constructor() {}
-		};
-
-		GitSpy = spy(Git);
-
-		loadTasks({
-			'../src/commands/publish': { default: publishStub },
+		publish = loadModule('tasks/publish', {
+			'../src/commands/publish': { default: publishStub.returns(Promise.resolve()) },
 			'../src/util/Git': { default: GitSpy },
+			'./util/wrapAsyncTask': { default: wrapAsyncTaskStub },
 			'../src/util/environment': {
 				hasGitCredentials: hasGitCredentialsStub,
 				publishMode: publishModeStub
@@ -48,44 +44,47 @@ registerSuite({
 		});
 	},
 
-	teardown() {
-		unloadTasks();
-	},
-
-	beforeEach() {
-		publishStub.returns(Promise.resolve());
-	},
-
 	afterEach() {
 		publishStub.reset();
 		hasGitCredentialsStub.reset();
 		publishModeStub.reset();
 		GitSpy.reset();
+		wrapAsyncTaskStub.reset();
+		optionsStub.reset();
+
+		gruntOptionStub.restore();
 	},
 
 	'publish task runs, has git credentials; eventually resolves'(this: any) {
+		gruntOptionStub.returns('publishMode');
 		hasGitCredentialsStub.returns(true);
 
-		const dfd = this.async();
-
-		runGruntTask('publish', dfd.callback((result: any) => {
+		setupWrappedAsyncStub.call({
+			options: optionsStub
+		}, wrapAsyncTaskStub, this.async(), () => {
 			assert.isTrue(hasGitCredentialsStub.calledOnce);
 			assert.isTrue(publishModeStub.calledOnce);
 			assert.isTrue(GitSpy.calledOnce);
 			assert.isTrue(publishStub.calledOnce);
-			assert.isUndefined(result);
-		}));
+		});
+
+		publish(grunt);
+
+		assert.isTrue(wrapAsyncTaskStub.calledOnce);
 	},
 
 	'publish task runs, has no git credentials; eventually resolves'(this: any) {
-		const dfd = this.async();
-
-		runGruntTask('publish', dfd.callback((result: any) => {
+		setupWrappedAsyncStub.call({
+			options: optionsStub
+		}, wrapAsyncTaskStub, this.async(), () => {
 			assert.isTrue(hasGitCredentialsStub.calledOnce);
 			assert.isTrue(publishModeStub.notCalled);
 			assert.isTrue(GitSpy.calledOnce);
 			assert.isTrue(publishStub.calledOnce);
-			assert.isUndefined(result);
-		}));
+		});
+
+		publish(grunt);
+
+		assert.isTrue(wrapAsyncTaskStub.calledOnce);
 	}
 });
