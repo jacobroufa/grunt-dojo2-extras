@@ -12,7 +12,7 @@ export const loaderOptions = {
 
 export const suites = [ 'tests/unit/all' ];
 
-export const excludeInstrumentation = /^(?:_build\/tests|node_modules)\//;
+export const excludeInstrumentation = true; // /^(?:_build\/tests|node_modules)\//;
 
 export const loaders = {
 	'host-node': '@dojo/loader'

@@ -1,3 +1,5 @@
-export default function (name: string): void {
-	console.log(`hello ${ name }`);
+import excludedHello from './excluded/excluded';
+
+export default function hello(name: string): void {
+	excludedHello(name);
 }
