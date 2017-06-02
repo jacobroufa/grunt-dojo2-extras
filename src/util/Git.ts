@@ -150,8 +150,7 @@ export default class Git {
 		return this.execSSHAgent('git', params, { silent: false, cwd: this.cloneDirectory });
 	}
 
-	setConfig(key: string, value: string) {
-		// TODO make global optional
-		return promiseExec(`git config --global ${ key } ${ value }`, { silent: false });
+	setConfig(key: string, value: string, global: string = '') {
+		return promiseExec(`git config ${ global } ${ key } ${ value }`, { silent: false });
 	}
 }
