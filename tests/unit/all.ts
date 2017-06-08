@@ -1,5 +1,6 @@
 import './src/log';
 import './src/commands/getReleases';
+import './src/commands/typedoc';
 import './src/commands/publish';
 import './src/commands/installDependencies';
 import './src/commands/sync';
