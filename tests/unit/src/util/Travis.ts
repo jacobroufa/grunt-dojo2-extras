@@ -103,6 +103,7 @@ registerSuite({
 
 					try {
 						await travis.createAuthorization(repo);
+						assert.fail('Should have thrown');
 					} catch (e) {
 						// expected to throw
 					}
