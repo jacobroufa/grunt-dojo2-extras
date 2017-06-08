@@ -9,5 +9,6 @@ import './src/util/file';
 import './src/util/Git';
 import './src/util/process';
 import './src/util/GitHub';
+import './src/util/Travis';
 import './src/util/streams';
 import './tasks/util/getGithubSlug';
