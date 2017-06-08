@@ -69,7 +69,7 @@ registerSuite({
 					promise = processUtil.promisify(processUtil.exec('test'));
 
 					proc.on.lastCall.args[1](1);
-					assert.equal(proc, await promise);
+					await promise;
 
 					assert.fail('promise should reject');
 				} catch (e) {
