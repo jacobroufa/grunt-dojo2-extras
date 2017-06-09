@@ -2,7 +2,7 @@ import * as registerSuite from 'intern!object';
 import * as assert from 'intern/chai!assert';
 import * as Test from 'intern/lib/Test';
 import * as grunt from 'grunt';
-import {SinonStub, stub} from 'sinon';
+import { SinonStub, stub } from 'sinon';
 import loadModule, { cleanupModuleMocks } from '../../_support/loadModule';
 import { setupWrappedAsyncStub } from '../../_support/tasks';
 
