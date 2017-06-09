@@ -2,26 +2,26 @@ import * as registerSuite from 'intern!object';
 import * as assert from 'intern/chai!assert';
 import * as Test from 'intern/lib/Test';
 import * as grunt from 'grunt';
-import { stub } from 'sinon';
+import { SinonStub, stub } from 'sinon';
 import loadModule, { cleanupModuleMocks } from '../../_support/loadModule';
 import { setupWrappedAsyncStub } from '../../_support/tasks';
 
 let prebuild: any;
+let registerTaskStub: SinonStub;
 
 const wrapAsyncTaskStub = stub();
 const decryptDeployKeyStub = stub();
 const loggerStub = { info: stub() };
-const registerTaskStub = stub(grunt, 'registerTask');
 
 registerSuite({
 	name: 'tasks/prebuild',
 
 	after() {
 		cleanupModuleMocks();
-		registerTaskStub.restore();
 	},
 
 	beforeEach() {
+		registerTaskStub = stub(grunt, 'registerTask');
 		prebuild = loadModule('tasks/prebuild', {
 			'./util/wrapAsyncTask': { default: wrapAsyncTaskStub },
 			'../src/commands/decryptDeployKey': { default: decryptDeployKeyStub },
@@ -30,10 +30,11 @@ registerSuite({
 	},
 
 	afterEach() {
-		registerTaskStub.reset();
 		wrapAsyncTaskStub.reset();
 		decryptDeployKeyStub.reset();
 		loggerStub.info.reset();
+
+		registerTaskStub.restore();
 	},
 
 	'decryptDeployKey': (() => {
