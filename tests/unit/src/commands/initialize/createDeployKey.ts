@@ -2,6 +2,7 @@ import * as registerSuite from 'intern!object';
 import * as assert from 'intern/chai!assert';
 import loadModule, { cleanupModuleMocks } from '../../../../_support/loadModule';
 import { stub } from 'sinon';
+import { throwWithError } from '../../../../_support/util';
 
 let createDeployKey: any;
 
@@ -87,10 +88,13 @@ registerSuite({
 				existsSyncStub.returns(true);
 
 				const promise = createDeployKey('deploykey.file', 'deploykey.enc');
-				return promise.then(assert.fail, (err: any) => {
-					assert.strictEqual(err.message, 'Deploy key already exists');
-					assert.isTrue(existsSyncStub.calledOnce);
-				});
+				return promise.then(
+					throwWithError('Should reject when deploy key already exists'),
+					(err: any) => {
+						assert.strictEqual(err.message, 'Deploy key already exists');
+						assert.isTrue(existsSyncStub.calledOnce);
+					}
+				);
 
 			}
 		};

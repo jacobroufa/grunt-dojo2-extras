@@ -4,6 +4,7 @@ import loadModule, { cleanupModuleMocks } from '../../../_support/loadModule';
 import { spy, stub, SinonStub } from 'sinon';
 import Git from 'src/util/Git';
 import * as env from 'src/util/environment';
+import { throwWithError } from '../../../_support/util';
 
 let Module: any;
 let git: Git;
@@ -84,19 +85,25 @@ registerSuite({
 
 	async assert() {
 		git.isInitialized = () => false;
-		git.assert('url').then(() => assert.fail(), (error: Error) => {
-			assert.strictEqual(error.message,
-				`Repository is not initialized at "${ git.cloneDirectory }"`);
-		});
+		git.assert('url').then(
+			throwWithError('Should reject when the repository is not initialized'),
+			(error: Error) => {
+				assert.strictEqual(error.message,
+					`Repository is not initialized at "${ git.cloneDirectory }"`);
+			}
+		);
 
 		git.isInitialized = () => true;
 		git.getConfig = stub().withArgs('remote.origin.url')
 			.returns('url');
 
-		git.assert('other_url').then(() => assert.fail(), (error: Error) => {
-			assert.strictEqual(error.message,
-				'Repository mismatch. Expected "url" to be "other_url".');
-		});
+		git.assert('other_url').then(
+			throwWithError('Should reject when the repository url is wrong'),
+			(error: Error) => {
+				assert.strictEqual(error.message,
+					'Repository mismatch. Expected "url" to be "other_url".');
+			}
+		);
 		return git.assert('url');
 	},
 
@@ -115,10 +122,12 @@ registerSuite({
 	clone: {
 		'If clone directory is not set; eventually rejects'() {
 			delete git.cloneDirectory;
-			return git.clone('url').then(() => assert.fail(), (error: Error) => {
-				assert.equal(error.message,
-					'A clone directory must be set');
-			});
+			return git.clone('url').then(
+				throwWithError('Should reject if clone directory is not set'),
+				(error: Error) => {
+					assert.equal(error.message, 'A clone directory must be set');
+				}
+			);
 		},
 
 		async 'Not initialized; assert not called, execSSHAgent called once, git.url === url'() {
@@ -154,10 +163,12 @@ registerSuite({
 	createOrphan: {
 		'If clone directory is not set; throws'() {
 			delete git.cloneDirectory;
-			git.createOrphan('branch').then(() => assert.fail(), (error: Error) => {
-				assert.equal(error.message,
-					'A clone directory must be set');
-			});
+			git.createOrphan('branch').then(
+				throwWithError('Should throw when clone directory is not set'),
+				(error: Error) => {
+					assert.equal(error.message, 'A clone directory must be set');
+				}
+			);
 		},
 
 		async 'promiseExec called twice with proper options'() {

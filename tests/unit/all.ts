@@ -1,6 +1,7 @@
 import './src/log';
 import './src/commands/decryptDeployKey';
 import './src/commands/getReleases';
+import './src/commands/initialize/initDeployment';
 import './src/commands/initialize/initAuthorization';
 import './src/commands/initialize/createDeployKey';
 import './src/commands/typedoc';

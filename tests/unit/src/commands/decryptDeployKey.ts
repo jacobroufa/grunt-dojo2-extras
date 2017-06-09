@@ -2,6 +2,7 @@ import * as registerSuite from 'intern!object';
 import * as assert from 'intern/chai!assert';
 import loadModule, { cleanupModuleMocks } from '../../../_support/loadModule';
 import { stub } from 'sinon';
+import { throwWithError } from '../../../_support/util';
 
 let decryptDeployKey: any;
 
@@ -116,13 +117,12 @@ registerSuite({
 				existsSyncStub.onCall(1).returns(false);
 				decryptDataObj.on.withArgs('error').yields(new Error('error'));
 
-				try {
-					await assertDecryptDeployKey();
-
-					assert.fail();
-				} catch (err) {
-					assert.strictEqual(err.message, 'error');
-				}
+				return assertDecryptDeployKey().then(
+					throwWithError('Should reject when necessary files don\'t exist'),
+					(err: Error) => {
+						assert.strictEqual(err.message, 'error');
+					}
+				);
 			}
 		};
 	})()

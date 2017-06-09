@@ -3,6 +3,7 @@ import * as assert from 'intern/chai!assert';
 import loadModule, { cleanupModuleMocks } from '../../../_support/loadModule';
 import { stub, SinonStub } from 'sinon';
 import Travis, { Repository } from 'src/util/Travis';
+import { throwWithError } from '../../../_support/util';
 
 let module: any;
 let travis: Travis;
@@ -75,11 +76,14 @@ registerSuite({
 
 					const promise = travis.createAuthorization(repo);
 
-					return promise.then(assert.fail, (e) => {
-						assert.strictEqual(e.message, 'An existing authorization exists. "#1"');
-						assert.isTrue(repo.createAuthorization.notCalled);
-						assert.isTrue(repo.findAuthorization.calledOnce);
-					});
+					return promise.then(
+						throwWithError('Should reject when an authorization exists'),
+						(e) => {
+							assert.strictEqual(e.message, 'An existing authorization exists. "#1"');
+							assert.isTrue(repo.createAuthorization.notCalled);
+							assert.isTrue(repo.findAuthorization.calledOnce);
+						}
+					);
 				},
 
 				async 'authentication succeeds'() {
@@ -101,18 +105,19 @@ registerSuite({
 					const auth = stub(travis, 'authenticate').returns(Promise.reject());
 					const deleteAuth = stub(travis, 'deleteAuthorization').returns(Promise.resolve());
 
-					try {
-						await travis.createAuthorization(repo);
-						assert.fail('Should have thrown');
-					} catch (e) {
-						// expected to throw
-					}
-
-					assert.isTrue(auth.calledOnce);
-					assert.isTrue(deleteAuth.calledOnce);
-
-					auth.restore();
-					deleteAuth.restore();
+					return travis.createAuthorization(repo).then(
+						() => {
+							auth.restore();
+							deleteAuth.restore();
+							throw new Error('Should reject when authentication fails');
+						},
+						() => {
+							auth.restore();
+							deleteAuth.restore();
+							assert.isTrue(auth.calledOnce);
+							assert.isTrue(deleteAuth.calledOnce);
+						}
+					);
 				}
 			};
 		})(),

@@ -2,6 +2,7 @@ import * as registerSuite from 'intern!object';
 import * as assert from 'intern/chai!assert';
 import loadModule, { cleanupModuleMocks } from '../../../../_support/loadModule';
 import { spy, stub, SinonStub } from 'sinon';
+import { throwWithError } from '../../../../_support/util';
 
 let initAuthorization: any;
 
@@ -128,9 +129,12 @@ registerSuite({
 
 				const promise = assertInitAuthorization();
 
-				return promise.then(assert.fail, (e) => {
-					assert.strictEqual(e.message, 'error');
-				});
+				return promise.then(
+					throwWithError('Should reject when fetching repository stub fails'),
+					(e) => {
+						assert.strictEqual(e.message, 'error');
+					}
+				);
 			},
 
 			'delete repo authorization'() {
@@ -139,9 +143,12 @@ registerSuite({
 
 				const promise = assertInitAuthorization();
 
-				return promise.then(assert.fail, () => {
-					assert.isTrue(repoDeleteAuthorizationStub.calledOnce);
-				});
+				return promise.then(
+					throwWithError('Should reject when setting environment variables fails'),
+					() => {
+						assert.isTrue(repoDeleteAuthorizationStub.calledOnce);
+					}
+				);
 			}
 		};
 
