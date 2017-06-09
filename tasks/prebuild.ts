@@ -15,5 +15,5 @@ export = function (grunt: IGrunt) {
 		}
 	}
 
-	grunt.registerTask('prebuild', 'prepares a the ci environment', wrapAsyncTask(prebuildTask));
+	grunt.registerTask('prebuild', 'prepares the ci environment', wrapAsyncTask(prebuildTask));
 };
