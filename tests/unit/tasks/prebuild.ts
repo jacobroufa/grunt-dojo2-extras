@@ -37,7 +37,7 @@ registerSuite({
 	},
 
 	'decryptDeployKey': (() => {
-		function assertInWrappedAsyncStub(test: Test, shouldLog: boolean = false) {
+		function assertInWrappedAsyncStub(test: Test, shouldLog: boolean) {
 			setupWrappedAsyncStub(wrapAsyncTaskStub, test.async(), () => {
 				assert.isTrue(registerTaskStub.calledOnce);
 				assert.isTrue(decryptDeployKeyStub.calledOnce);
@@ -53,25 +53,23 @@ registerSuite({
 			});
 		}
 
+		function testPrebuild(test: Test, wasDecryptionSuccessful: boolean) {
+			assertInWrappedAsyncStub(test, wasDecryptionSuccessful);
+
+			decryptDeployKeyStub.returns(Promise.resolve(wasDecryptionSuccessful));
+
+			prebuild(grunt);
+
+			assert.isTrue(wrapAsyncTaskStub.calledOnce);
+		}
+
 		return {
 			'successful decryption'(this: Test) {
-				assertInWrappedAsyncStub.call(this);
-
-				decryptDeployKeyStub.returns(Promise.resolve(true));
-
-				prebuild(grunt);
-
-				assert.isTrue(wrapAsyncTaskStub.calledOnce);
+				testPrebuild(this, true);
 			},
 
 			'decryption failed'(this: Test) {
-				assertInWrappedAsyncStub.call(this);
-
-				decryptDeployKeyStub.returns(Promise.resolve(false));
-
-				prebuild(grunt);
-
-				assert.isTrue(wrapAsyncTaskStub.calledOnce);
+				testPrebuild(this, false);
 			}
 		};
 	})()
