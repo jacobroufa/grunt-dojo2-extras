@@ -18,7 +18,7 @@ registerSuite({
 		loggerStub.error.reset();
 	},
 
-	beforeEach() {
+	before() {
 		wrapAsyncTask = loadModule('tasks/util/wrapAsyncTask', {
 			'../../src/log': { logger: loggerStub }
 		});
