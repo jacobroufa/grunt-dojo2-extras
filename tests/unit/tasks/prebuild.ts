@@ -10,6 +10,7 @@ let prebuild: any;
 
 const wrapAsyncTaskStub = stub();
 const decryptDeployKeyStub = stub();
+const loggerStub = { info: stub() };
 const registerTaskStub = stub(grunt, 'registerTask');
 
 registerSuite({
@@ -23,7 +24,8 @@ registerSuite({
 	beforeEach() {
 		prebuild = loadModule('tasks/prebuild', {
 			'./util/wrapAsyncTask': { default: wrapAsyncTaskStub },
-			'../src/commands/decryptDeployKey': { default: decryptDeployKeyStub }
+			'../src/commands/decryptDeployKey': { default: decryptDeployKeyStub },
+			'../src/log': { logger: loggerStub }
 		});
 	},
 
@@ -31,11 +33,28 @@ registerSuite({
 		registerTaskStub.reset();
 		wrapAsyncTaskStub.reset();
 		decryptDeployKeyStub.reset();
+		loggerStub.info.reset();
 	},
 
 	'decryptDeployKey': (() => {
+		function assertInWrappedAsyncStub(test: Test, shouldLog: boolean = false) {
+			setupWrappedAsyncStub(wrapAsyncTaskStub, test.async(), () => {
+				assert.isTrue(registerTaskStub.calledOnce);
+				assert.isTrue(decryptDeployKeyStub.calledOnce);
+				if (shouldLog) {
+					assert.isTrue(
+						loggerStub.info.calledWith('Decrypted deploy key'),
+						'Should have logged that the key was decrypted'
+					);
+				}
+				else {
+					assert.isTrue(loggerStub.info.notCalled, 'Should not have logged that the key was decrypted');
+				}
+			});
+		}
+
 		return {
-			'returns something'(this: Test) {
+			'successful decryption'(this: Test) {
 				assertInWrappedAsyncStub.call(this);
 
 				decryptDeployKeyStub.returns(Promise.resolve(true));
@@ -45,7 +64,7 @@ registerSuite({
 				assert.isTrue(wrapAsyncTaskStub.calledOnce);
 			},
 
-			'returns nothing'(this: Test) {
+			'decryption failed'(this: Test) {
 				assertInWrappedAsyncStub.call(this);
 
 				decryptDeployKeyStub.returns(Promise.resolve(false));
@@ -55,12 +74,5 @@ registerSuite({
 				assert.isTrue(wrapAsyncTaskStub.calledOnce);
 			}
 		};
-
-		function assertInWrappedAsyncStub(this: Test) {
-			setupWrappedAsyncStub(wrapAsyncTaskStub, this.async(), () => {
-				assert.isTrue(registerTaskStub.calledOnce);
-				assert.isTrue(decryptDeployKeyStub.calledOnce);
-			});
-		}
 	})()
 });
