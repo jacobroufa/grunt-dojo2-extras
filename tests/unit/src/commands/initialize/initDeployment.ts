@@ -133,7 +133,7 @@ registerSuite({
 
 			async 'default instance and options; Travis is not authorized, should not create deploy key'() {
 				isAuthorizedStub.returns(false);
-				travisCreateAuthorizationStub.resolves();
+				travisCreateAuthorizationStub.resolves(true);
 
 				await assertInitDeployment();
 
