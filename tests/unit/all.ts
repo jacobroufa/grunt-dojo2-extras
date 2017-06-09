@@ -18,3 +18,4 @@ import './src/util/Travis';
 import './src/util/streams';
 import './tasks/sync';
 import './tasks/util/getGithubSlug';
+import './tasks/util/wrapAsyncTask';
