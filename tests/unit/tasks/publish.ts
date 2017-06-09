@@ -77,6 +77,8 @@ registerSuite({
 			options: optionsStub
 		}, wrapAsyncTaskStub, this.async(), () => {
 			assert.isTrue(hasGitCredentialsStub.calledOnce, 'Should always check for git credentials');
+			assert.isTrue(GitSpy.calledOnce, 'Should always create a git utility');
+			assert.isTrue(publishStub.calledOnce, 'Should always call publish');
 
 			assert.isTrue(publishModeStub.notCalled, 'Shouldn\'t call publish mode when there are no git credentials');
 		});
