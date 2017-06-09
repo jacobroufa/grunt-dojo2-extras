@@ -22,7 +22,7 @@ registerSuite({
 					assert.isTrue(doneStub.calledWithExactly(undefined));
 				};
 
-				runWrapAsyncTaskTest.call(this, taskPromise, callbackAssert);
+				return runWrapAsyncTaskTest.call(this, taskPromise, callbackAssert);
 			},
 
 			'rejects'(this: any) {
@@ -31,7 +31,7 @@ registerSuite({
 					assert.isTrue(doneStub.calledWithExactly(false));
 				};
 
-				runWrapAsyncTaskTest.call(this, taskPromise, () => {}, errbackAssert);
+				return runWrapAsyncTaskTest.call(this, taskPromise, assert.fail, errbackAssert);
 			}
 		};
 
@@ -42,12 +42,13 @@ registerSuite({
 
 			wrapAsyncTask(taskStub).call(this);
 
+			this.async.restore();
+
 			// in order to properly assert on this test, the promise has to be resolved initially
 			// then passed into wrapAsyncTask and called (so the `then` is chained properly)
 			// and THEN we can make the assertion in the callback or errback as appropriate
-			promise.then(callback, errback);
+			return promise.then(callback, errback);
 
-			this.async.restore();
 		}
 	})()
 });
