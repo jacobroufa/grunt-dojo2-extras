@@ -6,7 +6,7 @@ import loadModule, { cleanupModuleMocks } from '../../_support/loadModule';
 import { setupWrappedAsyncStub } from '../../_support/tasks';
 
 let publish: any;
-let gruntOptionStub: SinonStub;
+let gruntOptionStub: SinonStub = stub(grunt, 'option');
 
 const Git = class {
 	constructor() {}
@@ -23,10 +23,10 @@ registerSuite({
 
 	after() {
 		cleanupModuleMocks();
+		gruntOptionStub.restore();
 	},
 
 	beforeEach() {
-		gruntOptionStub = stub(grunt, 'option');
 		optionsStub.yieldsTo('publishMode').returns({
 			cloneDirectory: 'cloneDirectory',
 			publishMode: null,
@@ -51,8 +51,6 @@ registerSuite({
 		GitSpy.reset();
 		wrapAsyncTaskStub.reset();
 		optionsStub.reset();
-
-		gruntOptionStub.restore();
 	},
 
 	'publish task runs, has git credentials; eventually resolves'(this: any) {
@@ -62,10 +60,11 @@ registerSuite({
 		setupWrappedAsyncStub.call({
 			options: optionsStub
 		}, wrapAsyncTaskStub, this.async(), () => {
-			assert.isTrue(hasGitCredentialsStub.calledOnce);
-			assert.isTrue(publishModeStub.calledOnce);
-			assert.isTrue(GitSpy.calledOnce);
-			assert.isTrue(publishStub.calledOnce);
+			assert.isTrue(hasGitCredentialsStub.calledOnce, 'Should always check for git credentials');
+			assert.isTrue(GitSpy.calledOnce, 'Should always create a git utility');
+			assert.isTrue(publishStub.calledOnce, 'Should always call publish');
+
+			assert.isTrue(publishModeStub.calledOnce, 'Should call publishMode when there are git credentials');
 		});
 
 		publish(grunt);
@@ -77,10 +76,9 @@ registerSuite({
 		setupWrappedAsyncStub.call({
 			options: optionsStub
 		}, wrapAsyncTaskStub, this.async(), () => {
-			assert.isTrue(hasGitCredentialsStub.calledOnce);
-			assert.isTrue(publishModeStub.notCalled);
-			assert.isTrue(GitSpy.calledOnce);
-			assert.isTrue(publishStub.calledOnce);
+			assert.isTrue(hasGitCredentialsStub.calledOnce, 'Should always check for git credentials');
+
+			assert.isTrue(publishModeStub.notCalled, 'Shouldn\'t call publish mode when there are no git credentials');
 		});
 
 		publish(grunt);
