@@ -57,6 +57,23 @@ registerSuite({
 	},
 
 	'decryptDeployKey': (() => {
+		function ensureDecryptionResolves() {
+			existsSyncStub.onCall(0).returns(true);
+			existsSyncStub.onCall(1).returns(false);
+			decryptDataObj.on.withArgs('close').yields();
+		}
+
+		async function assertDecryptDeployKey(encryptedFile?: any, key?: any, iv?: any, decryptedFile?: any) {
+			process.env.decryptKeyName = 'decryptKeyName';
+			process.env.decryptIvName = 'decryptIvName';
+
+			const promise = decryptDeployKey(encryptedFile, key, iv, decryptedFile);
+
+			assert.instanceOf(promise, Promise);
+
+			return promise;
+		}
+
 		return {
 			async 'arguments passed in explicitly'() {
 				ensureDecryptionResolves();
@@ -108,22 +125,5 @@ registerSuite({
 				}
 			}
 		};
-
-		function ensureDecryptionResolves() {
-			existsSyncStub.onCall(0).returns(true);
-			existsSyncStub.onCall(1).returns(false);
-			decryptDataObj.on.withArgs('close').yields();
-		}
-
-		async function assertDecryptDeployKey(encryptedFile?: any, key?: any, iv?: any, decryptedFile?: any) {
-			process.env.decryptKeyName = 'decryptKeyName';
-			process.env.decryptIvName = 'decryptIvName';
-
-			const promise = decryptDeployKey(encryptedFile, key, iv, decryptedFile);
-
-			assert.instanceOf(promise, Promise);
-
-			return promise;
-		}
 	})()
 });
