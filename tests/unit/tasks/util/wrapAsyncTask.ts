@@ -2,6 +2,7 @@ import * as registerSuite from 'intern!object';
 import * as assert from 'intern/chai!assert';
 import { stub } from 'sinon';
 import loadModule, { cleanupModuleMocks } from '../../../_support/loadModule';
+import { throwWithError } from '../../../_support/util';
 
 const doneStub = stub();
 const taskStub = stub();
@@ -65,7 +66,9 @@ registerSuite({
 					assert.isTrue(doneStub.calledWithExactly(false));
 				};
 
-				return runWrapAsyncTaskTest.call(this, taskPromise, assert.fail, errbackAssert);
+				return runWrapAsyncTaskTest.call(
+					this, taskPromise, throwWithError('Should reject when task fails'), errbackAssert
+				);
 			},
 
 			'reject; logs error messages'(this: any) {
@@ -75,7 +78,9 @@ registerSuite({
 					assert.isTrue(doneStub.calledWithExactly(false));
 				};
 
-				return runWrapAsyncTaskTest.call(this, taskPromise, assert.fail, errbackAssert);
+				return runWrapAsyncTaskTest.call(
+					this, taskPromise, throwWithError('Should reject when task fails'), errbackAssert
+				);
 			}
 		};
 	})()

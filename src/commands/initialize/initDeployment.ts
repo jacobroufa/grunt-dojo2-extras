@@ -64,14 +64,12 @@ export default async function initDeployment(repo: GitHub, travis = new Travis()
 		const travisEnvVars = await travisRepo.listEnvironmentVariables();
 
 		if (shouldCreateDeployKey(travisEnvVars, encryptedKeyFile)) {
-			const keys = await
-			createDeployKey(deployKeyFile, encryptedKeyFile);
+			const keys = await createDeployKey(deployKeyFile, encryptedKeyFile);
 
 			logger.info('Adding deployment key to GitHub');
-			keyResponse = await repo.createKey(readFileSync(keys.publicKey, {encoding: 'utf8'}))
+			keyResponse = await repo.createKey(readFileSync(keys.publicKey, {encoding: 'utf8'}));
 
-			await
-			travisRepo.setEnvironmentVariables(
+			await travisRepo.setEnvironmentVariables(
 				{name: env.decryptKeyName, value: keys.encryptedKey.key, isPublic: false},
 				{name: env.decryptIvName, value: keys.encryptedKey.iv, isPublic: false}
 			);

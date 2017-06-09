@@ -2,6 +2,7 @@ import * as registerSuite from 'intern!object';
 import * as assert from 'intern/chai!assert';
 import loadModule, { cleanupModuleMocks } from '../../../../_support/loadModule';
 import { spy, stub, SinonStub } from 'sinon';
+import { throwWithError } from '../../../../_support/util';
 
 let initDeployment: any;
 
@@ -52,14 +53,14 @@ registerSuite({
 		keyFileStub.returns('keyFile');
 		encryptedKeyFileStub.returns('encryptedKeyFile');
 		existsSyncStub.returns(true);
-		fetchRepositoryStub.returns(Promise.resolve({
+		fetchRepositoryStub.resolves({
 			listEnvironmentVariables: listEnvironmentVariablesStub,
 			setEnvironmentVariables: setEnvironmentVariablesStub
-		}));
-		listEnvironmentVariablesStub.returns(Promise.resolve([
+		});
+		listEnvironmentVariablesStub.resolves([
 			{ name: 'decryptKey', value: 'decryptKey', isPublic: false },
 			{ name: 'decryptIv', value: 'decryptIv', isPublic: false }
-		]));
+		]);
 		createDeployKeyStub.returns({
 			publicKey: 'publicKey',
 			privateKey: 'privateKey',
@@ -109,6 +110,17 @@ registerSuite({
 	},
 
 	'initDeployment': (() => {
+		async function assertInitDeployment(travis?: any, options?: any) {
+			const repo = new GitHub();
+			const promise = await initDeployment(repo, travis, options);
+
+			assert.isTrue(isAuthorizedStub.calledOnce);
+			assert.isTrue(fetchRepositoryStub.calledOnce);
+			assert.isTrue(travisDeleteAuthorizationStub.calledOnce);
+
+			return promise;
+		}
+
 		return {
 			async 'explicit Travis instance and options'() {
 				const travis = new Travis();
@@ -121,7 +133,7 @@ registerSuite({
 
 			async 'default instance and options; Travis is not authorized, should not create deploy key'() {
 				isAuthorizedStub.returns(false);
-				travisCreateAuthorizationStub.returns(Promise.resolve());
+				travisCreateAuthorizationStub.resolves();
 
 				await assertInitDeployment();
 
@@ -149,7 +161,7 @@ registerSuite({
 			},
 
 			async 'should create deploy key'() {
-				listEnvironmentVariablesStub.returns(Promise.resolve([]));
+				listEnvironmentVariablesStub.resolves([]);
 				isAuthorizedStub.returns(false);
 				existsSyncStub.returns(false);
 
@@ -161,41 +173,39 @@ registerSuite({
 				assert.isTrue(setEnvironmentVariablesStub.calledOnce);
 			},
 
-			async 'has no ssh key so will not call `deleteKey`; eventually throws'() {
-				const errorMessage = 'error: cannot create key';
+			'has no ssh key so will not call `deleteKey`; eventually throws'() {
+				const message = 'error: cannot create key';
 
-				createKeyStub.returns(Promise.reject(errorMessage));
+				createKeyStub.rejects({ message });
+				existsSyncStub.returns(false);
+				listEnvironmentVariablesStub.resolves([]);
 
-				try {
-					await assertInitDeployment();
-				} catch (e) {
-					assert.isTrue(deleteKeyStub.notCalled);
-					assert.strictEqual(errorMessage, e.message);
-				}
+				return assertInitDeployment().then(
+					throwWithError('Should throw when no ssh key can be created'),
+					(e) => {
+						assert.isTrue(deleteKeyStub.notCalled);
+						assert.strictEqual(message, e.message);
+					}
+				);
 			},
 
-			async 'has deploy key environment variable; calls `deleteKey`; eventually throws'() {
-				const errorMessage = 'error: cannot set env vars';
+			'has deploy key environment variable; calls `deleteKey`; eventually throws'() {
+				const message = 'error: cannot set env vars';
 
-				setEnvironmentVariablesStub.returns(Promise.reject(errorMessage));
+				setEnvironmentVariablesStub.rejects({ message });
+				existsSyncStub.returns(false);
+				listEnvironmentVariablesStub.resolves([]);
+				// Won't delete key unless keyResponse has a value
+				createKeyStub.resolves(true);
 
-				try {
-					await assertInitDeployment();
-				} catch (e) {
-					assert.isTrue(deleteKeyStub.calledOnce);
-					assert.strictEqual(errorMessage, e.message);
-				}
+				return assertInitDeployment().then(
+					throwWithError('Should throw when environment variables cannot be set'),
+					(e) => {
+						assert.isTrue(deleteKeyStub.calledOnce);
+						assert.strictEqual(message, e.message);
+					}
+				);
 			}
 		};
-
-		async function assertInitDeployment(travis?: any, options?: any) {
-			const repo = new GitHub();
-
-			await initDeployment(repo, travis, options);
-
-			assert.isTrue(isAuthorizedStub.calledOnce);
-			assert.isTrue(fetchRepositoryStub.calledOnce);
-			assert.isTrue(travisDeleteAuthorizationStub.calledOnce);
-		}
 	})()
 });

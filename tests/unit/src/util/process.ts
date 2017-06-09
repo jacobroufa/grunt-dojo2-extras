@@ -4,6 +4,7 @@ import { stub, SinonStub } from 'sinon';
 import loadModule, { cleanupModuleMocks } from '../../../_support/loadModule';
 import * as processUtil from 'src/util/process';
 import { LogStream } from 'src/log';
+import { throwWithError } from '../../../_support/util';
 
 let module: any;
 let execStub: SinonStub;
@@ -62,20 +63,19 @@ registerSuite({
 				return promise;
 			},
 
-			async 'child process exits with code other than 0; eventually rejects the returned promise'() {
+			'child process exits with code other than 0; eventually rejects the returned promise'() {
 				let promise;
 
-				try {
-					promise = processUtil.promisify(processUtil.exec('test'));
+				promise = processUtil.promisify(processUtil.exec('test'));
 
-					proc.on.lastCall.args[1](1);
-					await promise;
-
-					assert.fail('promise should reject');
-				} catch (e) {
-					assert.strictEqual(e.message, 'Process exited with a code of 1');
-					assert.strictEqual(process.exitCode, 1);
-				}
+				proc.on.lastCall.args[1](1);
+				return promise.then(
+					throwWithError('promise should reject'),
+					(e) => {
+						assert.strictEqual(e.message, 'Process exited with a code of 1');
+						assert.strictEqual(process.exitCode, 1);
+					}
+				);
 			}
 		};
 	})(),
