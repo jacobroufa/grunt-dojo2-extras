@@ -112,13 +112,11 @@ registerSuite({
 	'initDeployment': (() => {
 		async function assertInitDeployment(travis?: any, options?: any) {
 			const repo = new GitHub();
-			const promise = await initDeployment(repo, travis, options);
+			await initDeployment(repo, travis, options);
 
 			assert.isTrue(isAuthorizedStub.calledOnce);
 			assert.isTrue(fetchRepositoryStub.calledOnce);
 			assert.isTrue(travisDeleteAuthorizationStub.calledOnce);
-
-			return promise;
 		}
 
 		return {
