@@ -63,7 +63,7 @@ registerSuite({
 			decryptDataObj.on.withArgs('close').yields();
 		}
 
-		async function assertDecryptDeployKey(encryptedFile?: any, key?: any, iv?: any, decryptedFile?: any) {
+		function assertDecryptDeployKey(encryptedFile?: any, key?: any, iv?: any, decryptedFile?: any) {
 			process.env.decryptKeyName = 'decryptKeyName';
 			process.env.decryptIvName = 'decryptIvName';
 
