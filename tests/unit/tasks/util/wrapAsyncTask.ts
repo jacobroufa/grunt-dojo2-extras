@@ -29,6 +29,24 @@ registerSuite({
 	},
 
 	'task eventually': (() => {
+		function runWrapAsyncTaskTest(this: any, promise: Promise<any>, callback: () => void, errback?: () => void) {
+			taskStub.returns(promise);
+
+			stub(this, 'async').returns(doneStub);
+
+			wrapAsyncTask(taskStub).call(this);
+
+			this.async.restore();
+
+			// wrapAsyncTask performs the logic we're testing after the promise returned by the task it is
+			// passed resolves or is rejected. So, in order to verify the results we need to test after the
+			// promise is resolved(or rejected). By calling `then()` after wrapAsyncTask we can ensure
+			// that the testing callbacks will be executed after the actual callbacks passed to `then` by
+			// wrapAsyncTask.
+			return promise.then(callback, errback);
+
+		}
+
 		return {
 			'completes'(this: any) {
 				const taskPromise = Promise.resolve();
@@ -60,21 +78,5 @@ registerSuite({
 				return runWrapAsyncTaskTest.call(this, taskPromise, assert.fail, errbackAssert);
 			}
 		};
-
-		function runWrapAsyncTaskTest(this: any, promise: Promise<any>, callback: () => void, errback?: () => void) {
-			taskStub.returns(promise);
-
-			stub(this, 'async').returns(doneStub);
-
-			wrapAsyncTask(taskStub).call(this);
-
-			this.async.restore();
-
-			// in order to properly assert on this test, the promise has to be resolved initially
-			// then passed into wrapAsyncTask and called (so the `then` is chained properly)
-			// and THEN we can make the assertion in the callback or errback as appropriate
-			return promise.then(callback, errback);
-
-		}
 	})()
 });
