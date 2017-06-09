@@ -7,13 +7,13 @@ import loadModule, { cleanupModuleMocks } from '../../_support/loadModule';
 import { setupWrappedAsyncStub } from '../../_support/tasks';
 
 let sync: any;
+let registerMultiTaskStub: SinonStub;
 
 const getGithubSlugStub = stub();
 const syncStub = stub();
 const getConfigStub = stub();
 const wrapAsyncTaskStub = stub();
 const optionsStub = stub();
-const registerMultiTaskStub = stub(grunt, 'registerMultiTask');
 
 const Git = class {
 	constructor() {}
@@ -34,10 +34,10 @@ registerSuite({
 
 	after() {
 		cleanupModuleMocks();
-		registerMultiTaskStub.restore();
 	},
 
 	beforeEach() {
+		registerMultiTaskStub = stub(grunt, 'registerMultiTask');
 		optionsStub.returns({});
 		sync = loadModule('tasks/sync', {
 			'../src/commands/sync': { default: syncStub },
@@ -56,7 +56,8 @@ registerSuite({
 		getConfigStub.reset();
 		wrapAsyncTaskStub.reset();
 		optionsStub.reset();
-		registerMultiTaskStub.reset();
+
+		registerMultiTaskStub.restore();
 	},
 
 	'syncTask uses GitHub repo info, calls sync; eventually resolves'(this: Test) {

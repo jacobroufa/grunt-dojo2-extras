@@ -6,7 +6,7 @@ import loadModule, { cleanupModuleMocks } from '../../_support/loadModule';
 import { setupWrappedAsyncStub } from '../../_support/tasks';
 
 let publish: any;
-let gruntOptionStub: SinonStub = stub(grunt, 'option');
+let gruntOptionStub: SinonStub;
 
 const Git = class {
 	constructor() {}
@@ -21,18 +21,7 @@ const optionsStub = stub();
 registerSuite({
 	name: 'tasks/publish',
 
-	after() {
-		cleanupModuleMocks();
-		gruntOptionStub.restore();
-	},
-
-	beforeEach() {
-		optionsStub.yieldsTo('publishMode').returns({
-			cloneDirectory: 'cloneDirectory',
-			publishMode: null,
-			repo: null
-		});
-
+	before() {
 		publish = loadModule('tasks/publish', {
 			'../src/commands/publish': { default: publishStub.returns(Promise.resolve()) },
 			'../src/util/Git': { default: GitSpy },
@@ -44,6 +33,20 @@ registerSuite({
 		});
 	},
 
+	after() {
+		cleanupModuleMocks();
+	},
+
+	beforeEach() {
+		gruntOptionStub = stub(grunt, 'option');
+		optionsStub.yieldsTo('publishMode').returns({
+			cloneDirectory: 'cloneDirectory',
+			publishMode: null,
+			repo: null
+		});
+
+	},
+
 	afterEach() {
 		publishStub.reset();
 		hasGitCredentialsStub.reset();
@@ -51,6 +54,8 @@ registerSuite({
 		GitSpy.reset();
 		wrapAsyncTaskStub.reset();
 		optionsStub.reset();
+
+		gruntOptionStub.restore();
 	},
 
 	'publish task runs, has git credentials; eventually resolves'(this: any) {
