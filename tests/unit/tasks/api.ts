@@ -103,7 +103,6 @@ registerSuite({
 		setupWrappedAsyncStub.call({
 			options: optionsStub
 		}, wrapAsyncTaskStub, this.async(), () => {
-			console.log('asserting things about remote opts test');
 			assert.isTrue(optionsStub.calledOnce);
 			assert.isTrue(GitHubSpy.calledOnce);
 			assert.isTrue(joinStub.notCalled);
@@ -134,7 +133,6 @@ registerSuite({
 		setupWrappedAsyncStub.call({
 			options: optionsStub
 		}, wrapAsyncTaskStub, this.async(), () => {
-			console.log('asserting things about remote opts test');
 			assert.isTrue(optionsStub.calledOnce);
 			assert.isTrue(GitHubSpy.calledOnce);
 			assert.isTrue(joinStub.calledOnce);
@@ -166,7 +164,6 @@ registerSuite({
 		setupWrappedAsyncStub.call({
 			options: optionsStub
 		}, wrapAsyncTaskStub, this.async(), () => {
-			console.log('asserting things about remote opts test');
 			assert.isTrue(optionsStub.calledOnce);
 			assert.isTrue(GitHubSpy.calledOnce);
 			assert.isTrue(joinStub.calledOnce);
@@ -201,7 +198,6 @@ registerSuite({
 		setupWrappedAsyncStub.call({
 			options: optionsStub
 		}, wrapAsyncTaskStub, this.async(), () => {
-			console.log('asserting things about remote opts test');
 			assert.isTrue(optionsStub.calledOnce);
 			assert.isTrue(GitHubSpy.calledOnce);
 			assert.isTrue(joinStub.calledOnce);
@@ -236,7 +232,6 @@ registerSuite({
 		setupWrappedAsyncStub.call({
 			options: optionsStub
 		}, wrapAsyncTaskStub, this.async(), () => {
-			console.log('asserting things about remote opts test');
 			assert.isTrue(optionsStub.calledOnce);
 			assert.isTrue(GitHubSpy.calledOnce);
 			assert.isTrue(joinStub.calledOnce);
@@ -268,7 +263,6 @@ registerSuite({
 		setupWrappedAsyncStub.call({
 			options: optionsStub
 		}, wrapAsyncTaskStub, this.async(), () => {
-			console.log('asserting things about no remote opts test');
 			assert.isTrue(optionsStub.calledOnce);
 			assert.isTrue(resolveStub.calledOnce);
 			assert.isTrue(typedocStub.calledOnce);
@@ -292,7 +286,6 @@ registerSuite({
 		setupWrappedAsyncStub.call({
 			options: optionsStub
 		}, wrapAsyncTaskStub, this.async(), () => {
-			console.log('asserting things about no remote opts test, should installDeps');
 			assert.isTrue(optionsStub.calledOnce);
 			assert.isTrue(installDependenciesStub.calledOnce);
 			assert.isTrue(resolveStub.calledOnce);
