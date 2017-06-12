@@ -1,10 +1,11 @@
 import * as registerSuite from 'intern!object';
 import * as assert from 'intern/chai!assert';
 import * as grunt from 'grunt';
-import { stub, spy } from 'sinon';
+import { stub, spy, SinonStub } from 'sinon';
 import loadModule, { cleanupModuleMocks } from '../../_support/loadModule';
 
 let setup: any;
+let registerMultiTaskStub: SinonStub;
 
 const authenticateStub = stub();
 const getGithubSlugStub = stub();
@@ -12,7 +13,6 @@ const initDeploymentStub = stub();
 const initAuthorizationStub = stub();
 const wrapAsyncTaskStub = stub();
 const optionsStub = stub();
-const registerMultiTaskStub = stub(grunt, 'registerMultiTask');
 const GitHub = class {
 	constructor() {
 		return this;
@@ -27,6 +27,7 @@ registerSuite({
 	name: 'tasks/setup',
 
 	beforeEach() {
+		registerMultiTaskStub = stub(grunt, 'registerMultiTask');
 		setup = loadModule('tasks/setup', {
 			'./util/wrapAsyncTask': { default: wrapAsyncTaskStub },
 			'../src/util/GitHub': { default: GitHubSpy },
@@ -38,7 +39,6 @@ registerSuite({
 
 	after() {
 		cleanupModuleMocks();
-		registerMultiTaskStub.restore();
 	},
 
 	afterEach() {
@@ -49,7 +49,8 @@ registerSuite({
 		wrapAsyncTaskStub.reset();
 		optionsStub.reset();
 		GitHubSpy.reset();
-		registerMultiTaskStub.reset();
+
+		registerMultiTaskStub.restore();
 	},
 
 	'setup calls initDeployment and initAuthorization; eventually resolves'(this: any) {

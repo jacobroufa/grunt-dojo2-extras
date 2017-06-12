@@ -1,11 +1,12 @@
 import * as registerSuite from 'intern!object';
 import * as assert from 'intern/chai!assert';
 import * as grunt from 'grunt';
-import { stub, spy } from 'sinon';
+import {stub, spy, SinonStub} from 'sinon';
 import loadModule, { cleanupModuleMocks } from '../../_support/loadModule';
 import { setupWrappedAsyncStub } from '../../_support/tasks';
 
 let api: any;
+let registerMultiTaskStub: SinonStub;
 
 const typedocStub = stub();
 const syncStub = stub();
@@ -22,7 +23,6 @@ const installDependenciesStub = stub();
 const makeTempDirectoryStub = stub();
 const wrapAsyncTaskStub = stub();
 const optionsStub = stub();
-const registerMultiTaskStub = stub(grunt, 'registerMultiTask');
 const GitHub = class {
 	name: string;
 	url: string;
@@ -59,11 +59,11 @@ registerSuite({
 			'../src/commands/installDependencies': { default: installDependenciesStub },
 			'../src/util/file': { makeTempDirectory: makeTempDirectoryStub }
 		});
+		registerMultiTaskStub = stub(grunt, 'registerMultiTask');
 	},
 
 	after() {
 		cleanupModuleMocks();
-		registerMultiTaskStub.restore();
 	},
 
 	afterEach() {
@@ -83,7 +83,8 @@ registerSuite({
 		makeTempDirectoryStub.reset();
 		wrapAsyncTaskStub.reset();
 		optionsStub.reset();
-		registerMultiTaskStub.reset();
+
+		registerMultiTaskStub.restore();
 	},
 
 	'api task has remote options including html format and string repo; no missing filters, no APIs match; eventually resolves'(this: any) {
