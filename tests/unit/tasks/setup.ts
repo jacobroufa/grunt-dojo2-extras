@@ -1,7 +1,7 @@
 import * as registerSuite from 'intern!object';
 import * as assert from 'intern/chai!assert';
 import * as grunt from 'grunt';
-import {stub, spy } from 'sinon';
+import { stub, spy } from 'sinon';
 import loadModule, { cleanupModuleMocks } from '../../_support/loadModule';
 
 let setup: any;
