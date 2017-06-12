@@ -1,9 +1,8 @@
 import * as registerSuite from 'intern!object';
 import * as assert from 'intern/chai!assert';
 import * as grunt from 'grunt';
-import { stub, spy } from 'sinon';
+import {stub, spy } from 'sinon';
 import loadModule, { cleanupModuleMocks } from '../../_support/loadModule';
-import { setupWrappedAsyncStub } from '../../_support/tasks';
 
 let setup: any;
 
@@ -54,25 +53,27 @@ registerSuite({
 	},
 
 	'setup calls initDeployment and initAuthorization; eventually resolves'(this: any) {
+		const deferred = this.async();
+
 		let counter = 0;
 
 		getGithubSlugStub.returns({ name: 'name', owner: 'owner' });
 		optionsStub.returns({ password: 'password', username: 'username' });
-
-		setupWrappedAsyncStub.call({
-			options: optionsStub
-		}, wrapAsyncTaskStub, this.async(), () => {
-			// because wrapAsyncTask is called twice in this SUT, we don't want to run
-			// any assertions until it has been called both times.
-			if (counter >= 1) {
-				assert.isTrue(optionsStub.calledTwice);
-				assert.isTrue(registerMultiTaskStub.calledTwice);
-				assert.isTrue(getGithubSlugStub.calledTwice);
-				assert.isTrue(GitHubSpy.calledTwice);
-				assert.isTrue(initDeploymentStub.calledOnce);
-				assert.isTrue(initAuthorizationStub.calledOnce);
-			}
-			counter++;
+		wrapAsyncTaskStub.callsFake((task: () => Promise<any>) => {
+			task.call({ options: optionsStub }).then(deferred.rejectOnError(() => {
+				// because wrapAsyncTask is called twice in this SUT, we don't want to run
+				// any assertions until it has been called both times.
+				if (counter >= 1) {
+					assert.isTrue(optionsStub.calledTwice);
+					assert.isTrue(registerMultiTaskStub.calledTwice);
+					assert.isTrue(getGithubSlugStub.calledTwice);
+					assert.isTrue(GitHubSpy.calledTwice);
+					assert.isTrue(initDeploymentStub.calledOnce);
+					assert.isTrue(initAuthorizationStub.calledOnce);
+					deferred.resolve();
+				}
+				counter++;
+			}));
 		});
 
 		setup(grunt);
