@@ -12,6 +12,7 @@ import './src/util/crypto';
 import './src/util/environment';
 import './src/util/file';
 import './src/util/Git';
+import './tasks/setup';
 import './tasks/publish';
 import './tasks/prebuild';
 import './src/util/process';
